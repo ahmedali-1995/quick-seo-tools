@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TabButton from '../UI/TabButton';
-import Checkbox from '../UI/Checkbox';
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
 import CodePreview from '../UI/CodePreview';
 import ProductTab from './ProductTab';
 import ProsConsTab from './ProsConsTab';
@@ -549,19 +550,24 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         <div className="p-6">
           <div className="mb-6 pb-6 border-b flex flex-wrap gap-4">
             {activeTab !== 'product' && activeTab !== 'schema' && (
-              <Checkbox
-                label="Bulk Mode"
-                checked={bulkMode}
-                onChange={() => setBulkMode(!bulkMode)}
-              />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="bulkMode"
+                  checked={bulkMode}
+                  onCheckedChange={() => setBulkMode(!bulkMode)}
+                />
+                <Label htmlFor="bulkMode">Bulk Mode</Label>
+              </div>
             )}
             {activeTab !== 'schema' && (
-              <Checkbox
-                label="Include CSS & JavaScript"
-                checked={sharedStyles}
-                onChange={() => setSharedStyles(!sharedStyles)}
-                className="ml-auto"
-              />
+              <div className="flex items-center space-x-2 ml-auto">
+                <Checkbox
+                  id="sharedStyles"
+                  checked={sharedStyles}
+                  onCheckedChange={() => setSharedStyles(!sharedStyles)}
+                />
+                <Label htmlFor="sharedStyles">Include CSS & JavaScript</Label>
+              </div>
             )}
           </div>
           

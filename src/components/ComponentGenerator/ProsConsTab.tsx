@@ -2,7 +2,8 @@
 import React from 'react';
 import TextField from '../UI/TextField';
 import { Button } from '../ui/button';
-import Checkbox from '../UI/Checkbox';
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
 
 interface ProsConsTabProps {
   bulkMode: boolean;
@@ -63,12 +64,13 @@ const ProsConsTab: React.FC<ProsConsTabProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="mb-4">
-        <Checkbox
-          label="Use Bulk Mode"
-          checked={bulkMode}
-          onChange={() => setBulkMode(!bulkMode)}
+      <div className="mb-4 flex items-center space-x-2">
+        <Checkbox 
+          id="bulk-mode-proscons" 
+          checked={bulkMode} 
+          onCheckedChange={() => setBulkMode(!bulkMode)} 
         />
+        <Label htmlFor="bulk-mode-proscons">Use Bulk Mode</Label>
         <p className="mt-2 text-sm text-muted-foreground ml-7">
           {bulkMode
             ? "Enter multiple products with pros and cons in bulk format"
