@@ -59,6 +59,10 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
+    "react-force-graph": "^1.44.0",
+    "date-fns": "^2.30.0",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
     "zod": "^3.23.8"
   },
   "devDependencies": {
