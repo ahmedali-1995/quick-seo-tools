@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { load } from 'cheerio';
 
 export interface SchemaResult {
   "@context": string;
@@ -15,18 +14,18 @@ export interface SchemaResult {
 export async function extractSchema(url: string): Promise<SchemaResult> {
   try {
     const response = await axios.get(url);
-    const $ = load(response.data);
     
-    // Find JSON-LD scripts
-    const schemaScripts = $('script[type="application/ld+json"]');
+    // Use regex to find JSON-LD scripts since we can't use Cheerio on the client
+    const jsonLdRegex = /<script\s+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
+    const matches = [...response.data.matchAll(jsonLdRegex)];
     
-    if (schemaScripts.length === 0) {
+    if (matches.length === 0) {
       throw new Error("No JSON-LD schema found on the page");
     }
     
     // Parse the first schema script found
     try {
-      const schemaText = $(schemaScripts[0]).html();
+      const schemaText = matches[0][1];
       const schemaData = schemaText ? JSON.parse(schemaText) : null;
       
       if (!schemaData) {
@@ -53,123 +52,82 @@ export async function extractSchema(url: string): Promise<SchemaResult> {
 export async function extractPageData(url: string): Promise<Record<string, any>> {
   try {
     const response = await axios.get(url);
-    const $ = load(response.data);
     
-    const extractedData: Record<string, any> = {
-      name: $('h1').first().text().trim() || $('title').text().trim(),
-    };
+    // Simplified extraction using regex since we can't use Cheerio on the client
+    const extractedData: Record<string, any> = {};
+    
+    // Extract title
+    const titleRegex = /<title>(.*?)<\/title>/i;
+    const titleMatch = response.data.match(titleRegex);
+    if (titleMatch && titleMatch[1]) {
+      extractedData.name = titleMatch[1].trim();
+    }
     
     // Extract description from meta tags
-    const metaDescription = $('meta[name="description"]').attr('content');
-    if (metaDescription) {
-      extractedData.description = metaDescription;
+    const metaDescriptionRegex = /<meta\s+name="description"\s+content="([^"]*)"[^>]*>/i;
+    const metaDescMatch = response.data.match(metaDescriptionRegex);
+    if (metaDescMatch && metaDescMatch[1]) {
+      extractedData.description = metaDescMatch[1];
     }
     
-    // Extract image from og:image or first significant image
-    const ogImage = $('meta[property="og:image"]').attr('content');
-    if (ogImage) {
-      extractedData.image = ogImage;
-    } else {
-      const images = $('img').filter((_, img) => {
-        const src = $(img).attr('src');
-        const width = parseInt($(img).attr('width') || '0', 10);
-        const height = parseInt($(img).attr('height') || '0', 10);
-        return src && !src.includes('icon') && !src.includes('logo') && (width > 100 || height > 100);
-      });
-      
-      if (images.length > 0) {
-        extractedData.image = $(images[0]).attr('src');
-      }
+    // Extract OG image
+    const ogImageRegex = /<meta\s+property="og:image"\s+content="([^"]*)"[^>]*>/i;
+    const ogImageMatch = response.data.match(ogImageRegex);
+    if (ogImageMatch && ogImageMatch[1]) {
+      extractedData.image = ogImageMatch[1];
     }
     
-    // Extract author information
-    const author = $('meta[name="author"]').attr('content') || 
-                  $('.author').text().trim() || 
-                  $('[rel="author"]').text().trim();
-    
-    if (author) {
+    // Extract author
+    const authorRegex = /<meta\s+name="author"\s+content="([^"]*)"[^>]*>/i;
+    const authorMatch = response.data.match(authorRegex);
+    if (authorMatch && authorMatch[1]) {
       extractedData.author = {
         "@type": "Person",
-        "name": author
+        "name": authorMatch[1]
       };
     }
     
-    // Extract date published
-    const publishedDate = $('meta[property="article:published_time"]').attr('content') ||
-                         $('time').attr('datetime');
-    
-    if (publishedDate) {
-      extractedData.datePublished = publishedDate;
-    }
-    
-    // Try to determine schema type based on URL and content
-    if (url.includes('product') || $('.product').length > 0 || $('[itemtype*="Product"]').length > 0) {
+    // Try to determine schema type based on URL
+    if (url.includes('product')) {
       extractedData['@type'] = 'Product';
       
       // Look for price information
-      const priceText = $('.price').text().trim() || 
-                      $('[itemprop="price"]').text().trim() ||
-                      $('*:contains($)').text().match(/\$\d+(\.\d{2})?/);
-      
-      if (priceText) {
-        let price = '';
-        if (typeof priceText === 'string') {
-          // Extract numbers from price text
-          const match = priceText.match(/[\d.,]+/);
-          price = match ? match[0] : '';
-        } else if (priceText && priceText[0]) {
-          price = priceText[0].replace('$', '');
-        }
-        
-        if (price) {
-          extractedData.offers = {
-            "@type": "Offer",
-            "price": price,
-            "priceCurrency": "USD" // Default to USD
-          };
-        }
+      const priceRegex = /\$\d+(\.\d{2})?/;
+      const priceMatch = response.data.match(priceRegex);
+      if (priceMatch && priceMatch[0]) {
+        const price = priceMatch[0].replace('$', '');
+        extractedData.offers = {
+          "@type": "Offer",
+          "price": price,
+          "priceCurrency": "USD"
+        };
       }
-    } else if (url.includes('article') || url.includes('blog') || $('article').length > 0) {
+    } else if (url.includes('article') || url.includes('blog')) {
       extractedData['@type'] = 'Article';
       extractedData.headline = extractedData.name;
-    } else if (url.includes('faq') || $('.faq').length > 0 || $('dt').length > 0) {
+      
+      // Extract published date
+      const publishedRegex = /<meta\s+property="article:published_time"\s+content="([^"]*)"[^>]*>/i;
+      const publishedMatch = response.data.match(publishedRegex);
+      if (publishedMatch && publishedMatch[1]) {
+        extractedData.datePublished = publishedMatch[1];
+      }
+    } else if (url.includes('faq')) {
       extractedData['@type'] = 'FAQPage';
       
-      // Try to extract FAQs
+      // Attempt to extract FAQs using regex (simplified)
       const faqs: any[] = [];
+      const faqRegex = /<dt[^>]*>(.*?)<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/gs;
+      const faqMatches = [...response.data.matchAll(faqRegex)];
       
-      // Method 1: Look for dt/dd pairs
-      $('dt').each((i, element) => {
-        const question = $(element).text().trim();
-        const answer = $(element).next('dd').text().trim();
-        
-        if (question && answer) {
+      faqMatches.forEach(match => {
+        if (match[1] && match[2]) {
           faqs.push({
             "@type": "Question",
-            "name": question,
+            "name": match[1].replace(/<[^>]*>/g, '').trim(),
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": answer
-            }
-          });
-        }
-      });
-      
-      // Method 2: Look for common FAQ patterns
-      $('.faq, .question, .q-and-a').each((i, element) => {
-        const questionEl = $(element).find('.question, h3, strong, b').first();
-        const answerEl = $(element).find('.answer, p').first();
-        
-        const question = questionEl.text().trim();
-        const answer = answerEl.text().trim();
-        
-        if (question && answer) {
-          faqs.push({
-            "@type": "Question",
-            "name": question,
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": answer
+              "text": match[2].replace(/<[^>]*>/g, '').trim()
             }
           });
         }
