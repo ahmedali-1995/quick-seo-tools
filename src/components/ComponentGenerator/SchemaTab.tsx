@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 import TextField from '../UI/TextField';
 import { toast } from '@/components/ui/use-toast';
 import { 
