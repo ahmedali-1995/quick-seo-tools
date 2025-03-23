@@ -32,7 +32,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { InfoIcon } from 'lucide-react';
 
 interface SchemaTabProps {
   url: string;
