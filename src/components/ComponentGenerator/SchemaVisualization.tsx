@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ForceGraph2D } from 'react-force-graph';
+import ForceGraph2D from 'react-force-graph-2d';
 
 interface Node {
   id: string;
@@ -112,13 +112,22 @@ const SchemaVisualization: React.FC<SchemaVisualizationProps> = ({ schemaData })
     }
   };
 
+  // Fallback message if ForceGraph2D is not available (server-side rendering)
+  if (typeof window === 'undefined') {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        Loading visualization...
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full border rounded">
       {graphData.nodes.length > 0 ? (
         <ForceGraph2D
           graphData={graphData}
-          nodeLabel={node => node.name}
-          nodeColor={node => getNodeColor(node)}
+          nodeLabel={(node) => node.name}
+          nodeColor={(node) => getNodeColor(node)}
           nodeRelSize={6}
           linkWidth={1}
           linkColor={() => "#999"}
