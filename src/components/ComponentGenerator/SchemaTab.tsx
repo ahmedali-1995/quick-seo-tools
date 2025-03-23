@@ -4,13 +4,21 @@ import { Button } from '@/components/ui/button';
 import TextField from '../UI/TextField';
 import { toast } from '@/components/ui/use-toast';
 import { 
-  CodeIcon, 
-  EditIcon, 
-  EyeIcon, 
-  ExtractIcon,
-  HistoryIcon,
-  TemplateIcon,
-  BookmarkIcon
+  Code as CodeIcon, 
+  Edit as EditIcon, 
+  Eye as EyeIcon, 
+  Download as DownloadIcon,
+  History as HistoryIcon,
+  FileText as TemplateIcon,
+  Bookmark as BookmarkIcon,
+  Info as InfoIcon,
+  Plus as PlusIcon,
+  Minus as MinusIcon,
+  Save as SaveIcon,
+  FolderOpen as FolderOpenIcon,
+  GitCompare as DiffIcon,
+  CheckCircle as CheckCircleIcon,
+  ArrowRight as ArrowRightIcon
 } from 'lucide-react';
 
 // Import our newly created components
@@ -32,7 +40,6 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { InfoIcon } from 'lucide-react';
 
 interface SchemaTabProps {
   url: string;
@@ -284,7 +291,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
                 onClick={() => addArrayItem(currentPath, {})}
                 className="h-7 w-7 p-0"
               >
-                <span>+</span>
+                <PlusIcon className="h-4 w-4" />
               </Button>
             </div>
             {value.map((item, index) => {
@@ -299,7 +306,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
                         onClick={() => removeArrayItem(currentPath, index)}
                         className="h-6 w-6 p-0 text-red-500"
                       >
-                        <span>-</span>
+                        <MinusIcon className="h-3 w-3" />
                       </Button>
                     </div>
                     {renderSchemaEditor(item, `${currentPath}[${index}]`)}
@@ -320,7 +327,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
                       onClick={() => removeArrayItem(currentPath, index)}
                       className="ml-2 h-8 w-8 p-0 text-red-500"
                     >
-                      <span>-</span>
+                      <MinusIcon className="h-4 w-4" />
                     </Button>
                   </div>
                 );
@@ -376,7 +383,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
               disabled={isLoading || !url}
               onClick={extractDataFromPage}
             >
-              <ExtractIcon className="h-4 w-4" />
+              <DownloadIcon className="h-4 w-4" />
               Extract Data
             </Button>
           </div>
@@ -398,7 +405,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
       
       {validationResult && !validationResult.valid && (
         <Alert variant="destructive">
-          <InfoCircledIcon className="h-4 w-4" />
+          <InfoIcon className="h-4 w-4" />
           <AlertTitle>Validation Issues</AlertTitle>
           <AlertDescription>
             <ul className="list-disc pl-5 mt-2">
