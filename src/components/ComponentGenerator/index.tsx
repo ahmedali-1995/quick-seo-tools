@@ -7,7 +7,7 @@ import ProductTab from './ProductTab';
 import ProsConsTab from './ProsConsTab';
 import FaqTab from './FaqTab';
 import SchemaTab from './SchemaTab';
-import { extractSchema, SchemaResult } from '@/utils/schemaUtils';
+import { SchemaResult } from '@/utils/schemaUtils';
 import { toast } from '@/components/ui/use-toast';
 
 const ComponentGenerator: React.FC = () => {
@@ -449,19 +449,143 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     return htmlContent;
   }
 
+  // Generate combined product + schema HTML
+  function generateProductWithSchemaHTML() {
+    if (!schemaData) {
+      toast({
+        title: "Schema Required",
+        description: "Please generate a schema first",
+        variant: "destructive"
+      });
+      return '';
+    }
+    
+    // Auto-populate schema from product data
+    const productSchema = {
+      ...schemaData,
+      name: productName,
+      description: productTitle,
+      image: imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
+    };
+    
+    // Add offers if it doesn't exist
+    if (!productSchema.offers && productSchema['@type'] === 'Product') {
+      // Try to extract price from specs
+      const priceSpec = specs.find(spec => 
+        spec.label.toLowerCase().includes('price') && 
+        spec.value.includes('$')
+      );
+      
+      if (priceSpec) {
+        const priceMatch = priceSpec.value.match(/\$([0-9]+(\.[0-9]+)?)/);
+        if (priceMatch && priceMatch[1]) {
+          productSchema.offers = {
+            "@type": "Offer",
+            "price": priceMatch[1],
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": shopUrl
+          };
+        }
+      }
+    }
+    
+    // Add product specifications
+    if (productSchema['@type'] === 'Product' && specs.length > 0) {
+      if (!productSchema.additionalProperty) {
+        productSchema.additionalProperty = [];
+      }
+      
+      specs.forEach(spec => {
+        if (!productSchema.additionalProperty.some(prop => prop.name === spec.label)) {
+          productSchema.additionalProperty.push({
+            "@type": "PropertyValue",
+            "name": spec.label,
+            "value": spec.value
+          });
+        }
+      });
+    }
+    
+    const schemaScript = `
+    <script type="application/ld+json">
+      ${JSON.stringify(productSchema, null, 2)}
+    </script>`;
+    
+    return generateProductHTML() + schemaScript;
+  }
+
+  // Generate combined FAQ + schema HTML
+  function generateFaqWithSchemaHTML() {
+    if (!schemaData || schemaData['@type'] !== 'FAQPage') {
+      // Create a FAQPage schema if needed
+      const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": []
+      };
+      
+      // Use the bulk or normal FAQ data
+      const faqItems = bulkMode 
+        ? bulkFaqData.trim().split('\n\n').map(pair => {
+            const lines = pair.trim().split('\n');
+            if (lines.length >= 2) {
+              return {
+                question: lines[0].replace(/^Q:\s*/i, '').trim(),
+                answer: lines[1].replace(/^A:\s*/i, '').trim()
+              };
+            }
+            return null;
+          }).filter(Boolean)
+        : faqs;
+      
+      // Add FAQ items to the schema
+      faqItems.forEach(faq => {
+        faqSchema.mainEntity.push({
+          "@type": "Question",
+          "name": faq.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq.answer
+          }
+        });
+      });
+      
+      const schemaScript = `
+      <script type="application/ld+json">
+        ${JSON.stringify(faqSchema, null, 2)}
+      </script>`;
+      
+      return generateFaqHTML() + schemaScript;
+    } else {
+      // Use the existing FAQ schema
+      return generateFaqHTML() + generateSchemaHTML();
+    }
+  }
+
   // Generate HTML based on active tab
   function generateHTML() {
     let htmlContent = '';
     
     switch (activeTab) {
       case 'product':
-        htmlContent = generateProductHTML();
+        if (schemaData && schemaData['@type'] === 'Product') {
+          // If we have a product schema, generate combined HTML
+          htmlContent = generateProductWithSchemaHTML();
+        } else {
+          htmlContent = generateProductHTML();
+        }
         break;
       case 'proscons':
         htmlContent = generateProsConsHTML();
         break;
       case 'faq':
-        htmlContent = generateFaqHTML();
+        if (schemaData && schemaData['@type'] === 'FAQPage') {
+          // If we have a FAQ schema, generate combined HTML
+          htmlContent = generateFaqWithSchemaHTML();
+        } else {
+          htmlContent = generateFaqHTML();
+        }
         break;
       case 'schema':
         htmlContent = generateSchemaHTML();
@@ -472,36 +596,88 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     
     setGeneratedHTML(htmlContent);
   }
-  
-  // Handle schema fetching
-  const handleFetchSchema = async () => {
-    if (!schemaUrl) {
-      toast({
-        title: "URL Required",
-        description: "Please enter a valid URL to extract schema from",
-        variant: "destructive"
-      });
-      return;
+
+  // Auto-generate schema from product data
+  function generateProductSchema() {
+    const newSchema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": productName,
+      "description": productTitle,
+      "image": imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
+    };
+    
+    // Try to extract price from specs
+    const priceSpec = specs.find(spec => 
+      spec.label.toLowerCase().includes('price') && 
+      spec.value.includes('$')
+    );
+    
+    if (priceSpec) {
+      const priceMatch = priceSpec.value.match(/\$([0-9]+(\.[0-9]+)?)/);
+      if (priceMatch && priceMatch[1]) {
+        newSchema.offers = {
+          "@type": "Offer",
+          "price": priceMatch[1],
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock",
+          "url": shopUrl
+        };
+      }
     }
     
-    setIsLoading(true);
-    try {
-      const result = await extractSchema(schemaUrl);
-      setSchemaData(result);
-      toast({
-        title: "Schema Generated",
-        description: "Schema has been successfully generated from the URL"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate schema",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+    // Add product specifications
+    if (specs.length > 0) {
+      newSchema.additionalProperty = specs.map(spec => ({
+        "@type": "PropertyValue",
+        "name": spec.label,
+        "value": spec.value
+      }));
     }
-  };
+    
+    setSchemaData(newSchema);
+    
+    toast({
+      title: "Schema Generated",
+      description: "Product schema has been generated from your product data"
+    });
+  }
+
+  // Auto-generate FAQ schema
+  function generateFaqSchema() {
+    const faqItems = bulkMode 
+      ? bulkFaqData.trim().split('\n\n').map(pair => {
+          const lines = pair.trim().split('\n');
+          if (lines.length >= 2) {
+            return {
+              question: lines[0].replace(/^Q:\s*/i, '').trim(),
+              answer: lines[1].replace(/^A:\s*/i, '').trim()
+            };
+          }
+          return null;
+        }).filter(Boolean)
+      : faqs;
+    
+    const newSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqItems.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+    
+    setSchemaData(newSchema);
+    
+    toast({
+      title: "Schema Generated",
+      description: "FAQ schema has been generated from your FAQs"
+    });
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-8">
@@ -569,6 +745,28 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
                 <Label htmlFor="sharedStyles">Include CSS & JavaScript</Label>
               </div>
             )}
+            
+            {activeTab === 'product' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateProductSchema}
+                className="ml-4"
+              >
+                Auto-Generate Schema
+              </Button>
+            )}
+            
+            {activeTab === 'faq' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateFaqSchema}
+                className="ml-4"
+              >
+                Auto-Generate Schema
+              </Button>
+            )}
           </div>
           
           <div className="tab-content">
@@ -626,7 +824,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
                 schemaData={schemaData}
                 setSchemaData={setSchemaData}
                 isLoading={isLoading}
-                handleFetchSchema={handleFetchSchema}
+                setIsLoading={setIsLoading}
               />
             )}
           </div>
