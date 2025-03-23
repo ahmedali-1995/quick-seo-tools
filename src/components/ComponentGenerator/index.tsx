@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import TabButton from '../UI/TabButton';
 import Checkbox from '../UI/Checkbox';
@@ -6,12 +5,20 @@ import CodePreview from '../UI/CodePreview';
 import ProductTab from './ProductTab';
 import ProsConsTab from './ProsConsTab';
 import FaqTab from './FaqTab';
+import SchemaTab from './SchemaTab';
+import { extractSchema, SchemaResult } from '@/utils/schemaUtils';
+import { toast } from '@/components/ui/use-toast';
 
 const ComponentGenerator: React.FC = () => {
   const [activeTab, setActiveTab] = useState('product');
   const [sharedStyles, setSharedStyles] = useState(true);
   const [bulkMode, setBulkMode] = useState(false);
   const [generatedHTML, setGeneratedHTML] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Schema Tab State
+  const [schemaUrl, setSchemaUrl] = useState('');
+  const [schemaData, setSchemaData] = useState<SchemaResult | null>(null);
   
   // Product Display State
   const [productTitle, setProductTitle] = useState('BEST MEN\'S MULTIVITAMIN FOR IMMUNE SUPPORT');
@@ -429,6 +436,18 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     }
   }
 
+  // Generate Schema HTML
+  function generateSchemaHTML() {
+    if (!schemaData) return '';
+    
+    const htmlContent = `
+    <script type="application/ld+json">
+      ${JSON.stringify(schemaData, null, 2)}
+    </script>`;
+    
+    return htmlContent;
+  }
+
   // Generate HTML based on active tab
   function generateHTML() {
     let htmlContent = '';
@@ -443,12 +462,45 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       case 'faq':
         htmlContent = generateFaqHTML();
         break;
+      case 'schema':
+        htmlContent = generateSchemaHTML();
+        break;
       default:
         htmlContent = '';
     }
     
     setGeneratedHTML(htmlContent);
   }
+  
+  // Handle schema fetching
+  const handleFetchSchema = async () => {
+    if (!schemaUrl) {
+      toast({
+        title: "URL Required",
+        description: "Please enter a valid URL to extract schema from",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const result = await extractSchema(schemaUrl);
+      setSchemaData(result);
+      toast({
+        title: "Schema Generated",
+        description: "Schema has been successfully generated from the URL"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate schema",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-8">
@@ -460,7 +512,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
           HTML Component Generator
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Create beautifully styled HTML components for product displays, pros & cons lists, and FAQ accordions.
+          Create beautifully styled HTML components for product displays, pros & cons lists, FAQ accordions, and Schema markup.
         </p>
       </div>
       
@@ -485,24 +537,32 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
             >
               FAQ Accordion
             </TabButton>
+            <TabButton
+              active={activeTab === 'schema'}
+              onClick={() => setActiveTab('schema')}
+            >
+              Schema Markup
+            </TabButton>
           </div>
         </div>
         
         <div className="p-6">
           <div className="mb-6 pb-6 border-b flex flex-wrap gap-4">
-            {activeTab !== 'product' && (
+            {activeTab !== 'product' && activeTab !== 'schema' && (
               <Checkbox
                 label="Bulk Mode"
                 checked={bulkMode}
                 onChange={() => setBulkMode(!bulkMode)}
               />
             )}
-            <Checkbox
-              label="Include CSS & JavaScript"
-              checked={sharedStyles}
-              onChange={() => setSharedStyles(!sharedStyles)}
-              className="ml-auto"
-            />
+            {activeTab !== 'schema' && (
+              <Checkbox
+                label="Include CSS & JavaScript"
+                checked={sharedStyles}
+                onChange={() => setSharedStyles(!sharedStyles)}
+                className="ml-auto"
+              />
+            )}
           </div>
           
           <div className="tab-content">
@@ -550,6 +610,17 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
                 setFaqs={setFaqs}
                 bulkFaqData={bulkFaqData}
                 setBulkFaqData={setBulkFaqData}
+              />
+            )}
+            
+            {activeTab === 'schema' && (
+              <SchemaTab
+                url={schemaUrl}
+                setUrl={setSchemaUrl}
+                schemaData={schemaData}
+                setSchemaData={setSchemaData}
+                isLoading={isLoading}
+                handleFetchSchema={handleFetchSchema}
               />
             )}
           </div>

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import TextField from '../UI/TextField';
+import { Button } from '../ui/button';
 import Checkbox from '../UI/Checkbox';
 
 interface FaqTabProps {

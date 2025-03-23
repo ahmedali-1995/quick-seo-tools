@@ -1,24 +1,24 @@
-
 import React from 'react';
 import TextField from '../UI/TextField';
+import { Button } from '../ui/button';
 
 interface ProductTabProps {
   productTitle: string;
-  setProductTitle: (value: string) => void;
+  setProductTitle: (title: string) => void;
   productName: string;
-  setProductName: (value: string) => void;
+  setProductName: (name: string) => void;
   imageUrl: string;
-  setImageUrl: (value: string) => void;
+  setImageUrl: (url: string) => void;
   shopButtonText: string;
-  setShopButtonText: (value: string) => void;
+  setShopButtonText: (text: string) => void;
   shopUrl: string;
-  setShopUrl: (value: string) => void;
+  setShopUrl: (url: string) => void;
   pros: string[];
   setPros: (pros: string[]) => void;
   cons: string[];
   setCons: (cons: string[]) => void;
-  specs: Array<{ label: string; value: string }>;
-  setSpecs: (specs: Array<{ label: string; value: string }>) => void;
+  specs: { label: string; value: string; }[];
+  setSpecs: (specs: { label: string; value: string; }[]) => void;
 }
 
 const ProductTab: React.FC<ProductTabProps> = ({
@@ -39,181 +39,178 @@ const ProductTab: React.FC<ProductTabProps> = ({
   specs,
   setSpecs,
 }) => {
-  const handleAddPro = () => {
-    setPros([...pros, '']);
-  };
-
-  const handleUpdatePro = (index: number, value: string) => {
-    const newPros = [...pros];
-    newPros[index] = value;
-    setPros(newPros);
-  };
-
-  const handleRemovePro = (index: number) => {
-    const newPros = [...pros];
-    newPros.splice(index, 1);
-    setPros(newPros);
-  };
-
-  const handleAddCon = () => {
-    setCons([...cons, '']);
-  };
-
-  const handleUpdateCon = (index: number, value: string) => {
-    const newCons = [...cons];
-    newCons[index] = value;
-    setCons(newCons);
-  };
-
-  const handleRemoveCon = (index: number) => {
-    const newCons = [...cons];
-    newCons.splice(index, 1);
-    setCons(newCons);
-  };
-
-  const handleAddSpec = () => {
-    setSpecs([...specs, { label: '', value: '' }]);
-  };
-
-  const handleUpdateSpec = (index: number, field: 'label' | 'value', value: string) => {
+  const handleSpecChange = (index: number, field: 'label' | 'value', value: string) => {
     const newSpecs = [...specs];
-    newSpecs[index] = { ...newSpecs[index], [field]: value };
+    newSpecs[index][field] = value;
     setSpecs(newSpecs);
   };
 
-  const handleRemoveSpec = (index: number) => {
+  const addSpec = () => {
+    setSpecs([...specs, { label: '', value: '' }]);
+  };
+
+  const removeSpec = (index: number) => {
     const newSpecs = [...specs];
     newSpecs.splice(index, 1);
     setSpecs(newSpecs);
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="p-6 rounded-lg glass-panel space-y-6">
-        <h3 className="text-lg font-medium text-primary">Product Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextField
-            label="Title"
-            value={productTitle}
-            onChange={(e) => setProductTitle(e.target.value)}
-          />
-          <TextField
-            label="Product Name"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-          />
-          <TextField
-            label="Product Image URL"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
-          />
-          <TextField
-            label="Shop Button Text"
-            value={shopButtonText}
-            onChange={(e) => setShopButtonText(e.target.value)}
-          />
-          <TextField
-            label="Shop URL"
-            value={shopUrl}
-            onChange={(e) => setShopUrl(e.target.value)}
-            placeholder="https://www.amazon.com/product-page"
-            className="md:col-span-2"
-          />
-        </div>
-      </div>
+    <div className="space-y-4">
+      <TextField
+        label="Product Title"
+        value={productTitle}
+        onChange={(e) => setProductTitle(e.target.value)}
+        placeholder="BEST MEN'S MULTIVITAMIN FOR IMMUNE SUPPORT"
+      />
+      <TextField
+        label="Product Name"
+        value={productName}
+        onChange={(e) => setProductName(e.target.value)}
+        placeholder="Theralogix Solo Vitamin & Mineral Supplement"
+      />
+      <TextField
+        label="Image URL"
+        value={imageUrl}
+        onChange={(e) => setImageUrl(e.target.value)}
+        placeholder="/api/placeholder/150/300"
+      />
+      <TextField
+        label="Shop Button Text"
+        value={shopButtonText}
+        onChange={(e) => setShopButtonText(e.target.value)}
+        placeholder="SHOP AT AMAZON"
+      />
+      <TextField
+        label="Shop URL"
+        value={shopUrl}
+        onChange={(e) => setShopUrl(e.target.value)}
+        placeholder="https://www.amazon.com"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 rounded-lg glass-panel">
-          <h3 className="text-lg font-medium text-primary mb-4">Pros</h3>
-          <div className="space-y-3">
-            {pros.map((pro, index) => (
-              <div key={`pro-${index}`} className="flex items-center gap-2">
-                <TextField
-                  value={pro}
-                  onChange={(e) => handleUpdatePro(index, e.target.value)}
-                  className="flex-grow"
-                />
-                <button
-                  onClick={() => handleRemovePro(index)}
-                  className="btn-destructive py-1 px-2"
-                  aria-label="Remove pro"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 6L6 18"></path>
-                    <path d="M6 6l12 12"></path>
-                  </svg>
-                </button>
-              </div>
-            ))}
-            <button onClick={handleAddPro} className="btn-primary w-full mt-2">
-              Add Pro
-            </button>
-          </div>
-        </div>
-
-        <div className="p-6 rounded-lg glass-panel">
-          <h3 className="text-lg font-medium text-primary mb-4">Cons</h3>
-          <div className="space-y-3">
-            {cons.map((con, index) => (
-              <div key={`con-${index}`} className="flex items-center gap-2">
-                <TextField
-                  value={con}
-                  onChange={(e) => handleUpdateCon(index, e.target.value)}
-                  className="flex-grow"
-                />
-                <button
-                  onClick={() => handleRemoveCon(index)}
-                  className="btn-destructive py-1 px-2"
-                  aria-label="Remove con"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 6L6 18"></path>
-                    <path d="M6 6l12 12"></path>
-                  </svg>
-                </button>
-              </div>
-            ))}
-            <button onClick={handleAddCon} className="btn-primary w-full mt-2">
-              Add Con
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-6 rounded-lg glass-panel">
-        <h3 className="text-lg font-medium text-primary mb-4">Specifications</h3>
-        <div className="space-y-3">
-          {specs.map((spec, index) => (
-            <div key={`spec-${index}`} className="flex items-center gap-2">
-              <TextField
-                value={spec.label}
-                onChange={(e) => handleUpdateSpec(index, 'label', e.target.value)}
-                placeholder="Label"
-                className="flex-1"
-              />
-              <TextField
-                value={spec.value}
-                onChange={(e) => handleUpdateSpec(index, 'value', e.target.value)}
-                placeholder="Value"
-                className="flex-1"
-              />
-              <button
-                onClick={() => handleRemoveSpec(index)}
-                className="btn-destructive py-1 px-2"
-                aria-label="Remove specification"
+      <div>
+        <label className="block text-sm font-medium mb-1 text-foreground">Pros</label>
+        {pros.map((pro, index) => (
+          <div key={index} className="flex space-x-2 mb-2">
+            <TextField
+              value={pro}
+              onChange={(e) => {
+                const newPros = [...pros];
+                newPros[index] = e.target.value;
+                setPros(newPros);
+              }}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                const newPros = [...pros];
+                newPros.splice(index, 1);
+                setPros(newPros);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="h-4 w-4"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18"></path>
-                  <path d="M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-          ))}
-          <button onClick={handleAddSpec} className="btn-primary w-full mt-2">
-            Add Specification
-          </button>
-        </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 12h-15"
+                />
+              </svg>
+            </Button>
+          </div>
+        ))}
+        <Button variant="secondary" onClick={() => setPros([...pros, ''])}>Add Pro</Button>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1 text-foreground">Cons</label>
+        {cons.map((con, index) => (
+          <div key={index} className="flex space-x-2 mb-2">
+            <TextField
+              value={con}
+              onChange={(e) => {
+                const newCons = [...cons];
+                newCons[index] = e.target.value;
+                setCons(newCons);
+              }}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => {
+                const newCons = [...cons];
+                newCons.splice(index, 1);
+                setCons(newCons);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="h-4 w-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 12h-15"
+                />
+              </svg>
+            </Button>
+          </div>
+        ))}
+        <Button variant="secondary" onClick={() => setCons([...cons, ''])}>Add Con</Button>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1 text-foreground">Specs</label>
+        {specs.map((spec, index) => (
+          <div key={index} className="flex space-x-2 mb-2">
+            <TextField
+              label="Label"
+              value={spec.label}
+              onChange={(e) => handleSpecChange(index, 'label', e.target.value)}
+              className="flex-1"
+            />
+            <TextField
+              label="Value"
+              value={spec.value}
+              onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => removeSpec(index)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="h-4 w-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 12h-15"
+                />
+              </svg>
+            </Button>
+          </div>
+        ))}
+        <Button variant="secondary" onClick={addSpec}>Add Spec</Button>
       </div>
     </div>
   );
