@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
-import { PlusIcon, Trash2Icon, EditIcon, DownloadIcon } from 'lucide-react';
+import { Plus, Trash2, Edit, Download } from 'lucide-react';
 
 interface SchemaTemplate {
   id: string;
@@ -175,7 +175,7 @@ const SchemaTemplates: React.FC<SchemaTemplatesProps> = ({
             setCreateDialogOpen(true);
           }}
         >
-          <PlusIcon className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4 mr-2" />
           Save Current
         </Button>
       </div>
@@ -212,7 +212,7 @@ const SchemaTemplates: React.FC<SchemaTemplatesProps> = ({
                     onClick={() => exportTemplate(template)}
                     title="Export Template"
                   >
-                    <DownloadIcon className="h-4 w-4" />
+                    <Download className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -220,7 +220,7 @@ const SchemaTemplates: React.FC<SchemaTemplatesProps> = ({
                     onClick={() => openEditDialog(template)}
                     title="Edit Template"
                   >
-                    <EditIcon className="h-4 w-4" />
+                    <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -229,7 +229,7 @@ const SchemaTemplates: React.FC<SchemaTemplatesProps> = ({
                     className="text-red-500 hover:text-red-600"
                     title="Delete Template"
                   >
-                    <Trash2Icon className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardFooter>
