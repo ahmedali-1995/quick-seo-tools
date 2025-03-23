@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
-import { PlusIcon, Trash2Icon, HistoryIcon, CheckCircleIcon, ArrowRightIcon, DiffIcon } from 'lucide-react';
+import { Plus, Trash2, History, CheckCircle, ArrowRight, GitCompare } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface SchemaVersion {
@@ -222,7 +222,7 @@ const SchemaVersions: React.FC<SchemaVersionsProps> = ({
             setCreateDialogOpen(true);
           }}
         >
-          <PlusIcon className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4 mr-2" />
           Save Version
         </Button>
       </div>
@@ -233,7 +233,7 @@ const SchemaVersions: React.FC<SchemaVersionsProps> = ({
             <Card key={version.id} className="overflow-hidden">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center">
-                  <HistoryIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <History className="h-4 w-4 mr-2 text-muted-foreground" />
                   {version.name}
                   {index === versions.length - 1 && (
                     <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Latest</span>
@@ -258,7 +258,7 @@ const SchemaVersions: React.FC<SchemaVersionsProps> = ({
                     onClick={() => onSelectVersion(version.data)}
                     className="flex items-center"
                   >
-                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                    <CheckCircle className="h-4 w-4 mr-1" />
                     Restore
                   </Button>
                   <Button
@@ -267,7 +267,7 @@ const SchemaVersions: React.FC<SchemaVersionsProps> = ({
                     onClick={() => openDiffView(version)}
                     className="flex items-center"
                   >
-                    <DiffIcon className="h-4 w-4 mr-1" />
+                    <GitCompare className="h-4 w-4 mr-1" />
                     View Changes
                   </Button>
                 </div>
@@ -277,7 +277,7 @@ const SchemaVersions: React.FC<SchemaVersionsProps> = ({
                   onClick={() => openDeleteDialog(version)}
                   className="text-red-500 hover:text-red-600"
                 >
-                  <Trash2Icon className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
