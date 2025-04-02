@@ -6,7 +6,7 @@ export interface SchemaResult {
   description?: string;
   image?: string;
   mainEntity?: any[];
-  // Add types for Product schema
+  // Add these missing properties that are used in ComponentGenerator
   offers?: {
     '@type': string;
     price: string;
