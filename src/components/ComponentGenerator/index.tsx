@@ -228,6 +228,9 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       document.addEventListener('DOMContentLoaded', function() {
         const questions = document.querySelectorAll('.faq-question');
         questions.forEach(question => {
+          const answer = question.nextElementSibling;
+          answer.style.display = 'block';
+          
           question.addEventListener('click', function() {
             const answer = this.nextElementSibling;
             answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
@@ -379,7 +382,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         ${faqItems.map(faq => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
             <div class="faq-question" style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
-            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
+            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswerActive)}">${faq.answer}</div>
           </div>
         `).join('')}
       </div>`;
@@ -392,7 +395,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         ${faqs.map(faq => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
             <div class="faq-question" style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
-            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
+            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswerActive)}">${faq.answer}</div>
           </div>
         `).join('')}
       </div>`;
@@ -422,7 +425,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       return '';
     }
     
-    const productSchema = {
+    const productSchema: SchemaResult = {
       ...schemaData,
       name: productName,
       description: productTitle,
@@ -455,8 +458,8 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       }
       
       specs.forEach(spec => {
-        if (!productSchema.additionalProperty.some(prop => prop.name === spec.label)) {
-          productSchema.additionalProperty.push({
+        if (!productSchema.additionalProperty?.some(prop => prop.name === spec.label)) {
+          productSchema.additionalProperty?.push({
             "@type": "PropertyValue",
             "name": spec.label,
             "value": spec.value
@@ -475,12 +478,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
 
   function generateFaqWithSchemaHTML() {
     if (!schemaData || schemaData['@type'] !== 'FAQPage') {
-      const faqSchema = {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": []
-      };
-      
       const faqItems = bulkMode 
         ? bulkFaqData.trim().split('\n\n').map(pair => {
             const lines = pair.trim().split('\n');
@@ -494,23 +491,25 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
           }).filter(Boolean)
         : faqs;
       
-      faqItems.forEach(faq => {
-        faqSchema.mainEntity.push({
+      const newSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqItems.map(faq => ({
           "@type": "Question",
           "name": faq.question,
           "acceptedAnswer": {
             "@type": "Answer",
             "text": faq.answer
           }
-        });
+        }))
+      };
+      
+      setSchemaData(newSchema);
+      
+      toast({
+        title: "Schema Generated",
+        description: "FAQ schema has been generated from your FAQs"
       });
-      
-      const schemaScript = `
-      <script type="application/ld+json">
-        ${JSON.stringify(faqSchema, null, 2)}
-      </script>`;
-      
-      return generateFaqHTML() + schemaScript;
     } else {
       return generateFaqHTML() + generateSchemaHTML();
     }
