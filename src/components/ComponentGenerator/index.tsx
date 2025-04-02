@@ -9,6 +9,7 @@ import FaqTab from './FaqTab';
 import SchemaTab from './SchemaTab';
 import { SchemaResult } from '@/utils/schemaUtils';
 import { toast } from '@/components/ui/use-toast';
+import { Button } from '../ui/button';
 
 const ComponentGenerator: React.FC = () => {
   const [activeTab, setActiveTab] = useState('product');
@@ -17,11 +18,9 @@ const ComponentGenerator: React.FC = () => {
   const [generatedHTML, setGeneratedHTML] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  // Schema Tab State
   const [schemaUrl, setSchemaUrl] = useState('');
   const [schemaData, setSchemaData] = useState<SchemaResult | null>(null);
   
-  // Product Display State
   const [productTitle, setProductTitle] = useState('BEST MEN\'S MULTIVITAMIN FOR IMMUNE SUPPORT');
   const [productName, setProductName] = useState('Theralogix Solo Vitamin & Mineral Supplement');
   const [imageUrl, setImageUrl] = useState('/api/placeholder/150/300');
@@ -43,7 +42,6 @@ const ComponentGenerator: React.FC = () => {
     { label: 'Certification', value: 'NSF' }
   ]);
 
-  // Pros Cons Only State
   const [prosConsTitle, setProsConsTitle] = useState('Pros and Cons');
   const [prosOnly, setProsOnly] = useState([
     'Easy to use interface',
@@ -55,7 +53,6 @@ const ComponentGenerator: React.FC = () => {
     'Requires internet connection'
   ]);
   
-  // Bulk Pros Cons State
   const [bulkProsConsData, setBulkProsConsData] = useState(
 `Product A
 pros: Easy to use, Affordable, Long battery life
@@ -65,7 +62,6 @@ Product B
 pros: Lightweight design, Premium build quality, Fast charging
 cons: Expensive, Short warranty period`);
 
-  // FAQ State
   const [faqs, setFaqs] = useState([
     { 
       question: 'How do I install this product?', 
@@ -77,7 +73,6 @@ cons: Expensive, Short warranty period`);
     }
   ]);
   
-  // Bulk FAQ State
   const [bulkFaqData, setBulkFaqData] = useState(
 `Q: How do I install this product?
 A: Installation is simple. Just unpack the box, connect the power cable, and follow the on-screen instructions.
@@ -85,249 +80,219 @@ A: Installation is simple. Just unpack the box, connect the power cable, and fol
 Q: What is the warranty period?
 A: All our products come with a standard 2-year warranty that covers manufacturing defects.`);
 
-  // Get CSS Styles
-  function getStyles() {
+  function getInlineStyles() {
+    return {
+      container: {
+        maxWidth: '600px',
+        margin: '0 auto',
+        border: '1px solid #5a2c82',
+        padding: '20px',
+        fontFamily: 'Arial, sans-serif'
+      },
+      productHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '20px'
+      },
+      productImage: {
+        width: '150px',
+        marginRight: '20px'
+      },
+      productTitle: {
+        flex: '1'
+      },
+      productTitleH3: {
+        color: '#5a2c82',
+        textAlign: 'center',
+        fontSize: '14px',
+        marginBottom: '10px'
+      },
+      productTitleH2: {
+        textAlign: 'center',
+        fontSize: '18px',
+        marginTop: '0',
+        color: '#333'
+      },
+      shopButton: {
+        backgroundColor: '#5a2c82',
+        color: 'white',
+        border: 'none',
+        padding: '8px 16px',
+        borderRadius: '4px',
+        fontWeight: 'bold',
+        display: 'block',
+        width: '150px',
+        textAlign: 'center',
+        margin: '10px auto',
+        textDecoration: 'none'
+      },
+      prosCons: {
+        display: 'flex',
+        marginBottom: '20px'
+      },
+      pros: {
+        flex: '1'
+      },
+      cons: {
+        flex: '1'
+      },
+      prosConsStandalone: {
+        border: '1px solid #dfdfdf',
+        padding: '20px',
+        marginBottom: '20px'
+      },
+      prosConsStandaloneH3: {
+        color: '#5a2c82',
+        textAlign: 'center',
+        marginTop: '0',
+        marginBottom: '20px'
+      },
+      h4: {
+        color: '#5a2c82',
+        borderBottom: '1px solid #5a2c82',
+        paddingBottom: '5px'
+      },
+      prosList: {
+        listStyleType: 'none',
+        paddingLeft: '0'
+      },
+      consList: {
+        listStyleType: 'none',
+        paddingLeft: '0'
+      },
+      prosItem: {
+        position: 'relative',
+        paddingLeft: '25px',
+        marginBottom: '10px'
+      },
+      consItem: {
+        position: 'relative',
+        paddingLeft: '25px',
+        marginBottom: '10px'
+      },
+      table: {
+        width: '100%',
+        borderCollapse: 'collapse'
+      },
+      tableTd: {
+        border: '1px solid #dfdfdf',
+        padding: '10px'
+      },
+      tableFirstTd: {
+        fontWeight: 'bold',
+        width: '150px',
+        backgroundColor: '#f9f6fc',
+        color: '#5a2c82'
+      },
+      faqContainer: {
+        border: '1px solid #dfdfdf',
+        padding: '20px',
+        marginBottom: '20px'
+      },
+      faqContainerH3: {
+        color: '#5a2c82',
+        textAlign: 'center',
+        marginTop: '0',
+        marginBottom: '20px'
+      },
+      faqItem: {
+        marginBottom: '10px',
+        border: '1px solid #dfdfdf',
+        borderRadius: '4px',
+        overflow: 'hidden'
+      },
+      faqQuestion: {
+        backgroundColor: '#f9f6fc',
+        padding: '10px 15px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        position: 'relative',
+        color: '#5a2c82'
+      },
+      faqAnswer: {
+        padding: '15px',
+        borderTop: '1px solid #dfdfdf',
+        display: 'none'
+      },
+      faqAnswerActive: {
+        padding: '15px',
+        borderTop: '1px solid #dfdfdf',
+        display: 'block'
+      }
+    };
+  }
+
+  function getFaqToggleScript() {
     return `
-    <style>
-      /* DNP Colors */
-      :root {
-        --dnp-purple: #5a2c82;
-        --dnp-green: #79b928;
-        --dnp-light-purple: #f9f6fc;
-        --border-color: #dfdfdf;
-      }
-      
-      /* Common Styles */
-      .dnp-container {
-        max-width: 600px;
-        margin: 0 auto;
-        border: 1px solid var(--dnp-purple);
-        padding: 20px;
-        font-family: Arial, sans-serif;
-      }
-      
-      /* Product Display Styles */
-      .product-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      .product-image {
-        width: 150px;
-        margin-right: 20px;
-      }
-      .product-title {
-        flex: 1;
-      }
-      .product-title h3 {
-        color: var(--dnp-purple);
-        text-align: center;
-        font-size: 14px;
-        margin-bottom: 10px;
-      }
-      .product-title h2 {
-        text-align: center;
-        font-size: 18px;
-        margin-top: 0;
-        color: #333;
-      }
-      .shop-button {
-        background-color: var(--dnp-purple);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        font-weight: bold;
-        display: block;
-        width: 150px;
-        text-align: center;
-        margin: 10px auto;
-        text-decoration: none;
-      }
-      .shop-button:hover {
-        background-color: #4a2569;
-      }
-      
-      /* Pros Cons Styles */
-      .pros-cons {
-        display: flex;
-        margin-bottom: 20px;
-      }
-      .pros, .cons {
-        flex: 1;
-      }
-      .pros-cons-standalone {
-        border: 1px solid var(--border-color);
-        padding: 20px;
-        margin-bottom: 20px;
-      }
-      .pros-cons-standalone h3 {
-        color: var(--dnp-purple);
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 20px;
-      }
-      h4 {
-        color: var(--dnp-purple);
-        border-bottom: 1px solid var(--dnp-purple);
-        padding-bottom: 5px;
-      }
-      .pros ul, .cons ul {
-        list-style-type: none;
-        padding-left: 0;
-      }
-      .pros li, .cons li {
-        position: relative;
-        padding-left: 25px;
-        margin-bottom: 10px;
-      }
-      .pros li:before, .cons li:before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 2px;
-        width: 16px;
-        height: 16px;
-        background-color: #f0f0f0;
-        border-radius: 50%;
-        border: 1px solid var(--border-color);
-      }
-      .pros li:after {
-        content: "✓";
-        position: absolute;
-        left: 4px;
-        top: -1px;
-        color: var(--dnp-green);
-      }
-      .cons li:after {
-        content: "✗";
-        position: absolute;
-        left: 4px;
-        top: -1px;
-        color: var(--dnp-purple);
-      }
-      
-      /* Table Styles */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      table td {
-        border: 1px solid var(--border-color);
-        padding: 10px;
-      }
-      td:first-child {
-        font-weight: bold;
-        width: 150px;
-        background-color: var(--dnp-light-purple);
-        color: var(--dnp-purple);
-      }
-      
-      /* FAQ Styles */
-      .faq-container {
-        border: 1px solid var(--border-color);
-        padding: 20px;
-        margin-bottom: 20px;
-      }
-      .faq-container h3 {
-        color: var(--dnp-purple);
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 20px;
-      }
-      .faq-item {
-        margin-bottom: 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        overflow: hidden;
-      }
-      .faq-question {
-        background-color: var(--dnp-light-purple);
-        padding: 10px 15px;
-        font-weight: bold;
-        cursor: pointer;
-        position: relative;
-        color: var(--dnp-purple);
-      }
-      .faq-question:after {
-        content: "+";
-        position: absolute;
-        right: 15px;
-        top: 10px;
-      }
-      .faq-question.active:after {
-        content: "-";
-      }
-      .faq-answer {
-        padding: 15px;
-        border-top: 1px solid var(--border-color);
-        display: none;
-      }
-      .faq-answer.active {
-        display: block;
-      }
-    </style>
-    
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Add click event to FAQ questions
         const questions = document.querySelectorAll('.faq-question');
         questions.forEach(question => {
           question.addEventListener('click', function() {
-            this.classList.toggle('active');
             const answer = this.nextElementSibling;
-            answer.classList.toggle('active');
+            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
           });
         });
       });
     </script>`;
   }
 
-  // Generate HTML for Product Display
   function generateProductHTML() {
+    const styles = getInlineStyles();
+    const scriptTag = sharedStyles ? getFaqToggleScript() : '';
+    
     const htmlContent = `
-    <div class="dnp-container">
-      <div class="product-header">
-        <img class="product-image" src="${imageUrl}" alt="Product Image">
-        <div class="product-title">
-          <h3>${productTitle}</h3>
-          <h2>${productName}</h2>
-          <a href="${shopUrl}" class="shop-button">${shopButtonText}</a>
+    <div style="${objectToInlineStyle(styles.container)}">
+      <div style="${objectToInlineStyle(styles.productHeader)}">
+        <img style="${objectToInlineStyle(styles.productImage)}" src="${imageUrl}" alt="Product Image">
+        <div style="${objectToInlineStyle(styles.productTitle)}">
+          <h3 style="${objectToInlineStyle(styles.productTitleH3)}">${productTitle}</h3>
+          <h2 style="${objectToInlineStyle(styles.productTitleH2)}">${productName}</h2>
+          <a href="${shopUrl}" style="${objectToInlineStyle(styles.shopButton)}">${shopButtonText}</a>
         </div>
       </div>
       
-      <div class="pros-cons">
-        <div class="pros">
-          <h4>PROS</h4>
-          <ul>
-            ${pros.map(pro => `<li>${pro}</li>`).join('')}
+      <div style="${objectToInlineStyle(styles.prosCons)}">
+        <div style="${objectToInlineStyle(styles.pros)}">
+          <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
+          <ul style="${objectToInlineStyle(styles.prosList)}">
+            ${pros.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
           </ul>
         </div>
-        <div class="cons">
-          <h4>CONS</h4>
-          <ul>
-            ${cons.map(con => `<li>${con}</li>`).join('')}
+        <div style="${objectToInlineStyle(styles.cons)}">
+          <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
+          <ul style="${objectToInlineStyle(styles.consList)}">
+            ${cons.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
           </ul>
         </div>
       </div>
       
-      <table>
+      <table style="${objectToInlineStyle(styles.table)}">
         ${specs.map(spec => 
           `<tr>
-            <td>${spec.label}</td>
-            <td>${spec.value}</td>
+            <td style="${objectToInlineStyle({...styles.tableTd, ...styles.tableFirstTd})}">${spec.label}</td>
+            <td style="${objectToInlineStyle(styles.tableTd)}">${spec.value}</td>
           </tr>`
         ).join('')}
       </table>
     </div>`;
 
-    return sharedStyles ? getStyles() + htmlContent : htmlContent;
+    return sharedStyles ? scriptTag + htmlContent : htmlContent;
   }
 
-  // Generate HTML for Pros Cons
+  function objectToInlineStyle(styleObj) {
+    return Object.entries(styleObj)
+      .map(([key, value]) => {
+        const kebabKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        return `${kebabKey}:${value}`;
+      })
+      .join(';');
+  }
+
   function generateProsConsHTML() {
+    const styles = getInlineStyles();
+    
     if (bulkMode) {
-      // Parse bulk data
       const products = bulkProsConsData.trim().split('\n\n');
       let htmlContent = '';
       
@@ -347,55 +312,55 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         });
         
         htmlContent += `
-        <div class="pros-cons-standalone">
-          <h3>${productName}</h3>
-          <div class="pros-cons">
-            <div class="pros">
-              <h4>PROS</h4>
-              <ul>
-                ${prosItems.map(pro => `<li>${pro}</li>`).join('')}
+        <div style="${objectToInlineStyle(styles.prosConsStandalone)}">
+          <h3 style="${objectToInlineStyle(styles.prosConsStandaloneH3)}">${productName}</h3>
+          <div style="${objectToInlineStyle(styles.prosCons)}">
+            <div style="${objectToInlineStyle(styles.pros)}">
+              <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
+              <ul style="${objectToInlineStyle(styles.prosList)}">
+                ${prosItems.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
               </ul>
             </div>
-            <div class="cons">
-              <h4>CONS</h4>
-              <ul>
-                ${consItems.map(con => `<li>${con}</li>`).join('')}
+            <div style="${objectToInlineStyle(styles.cons)}">
+              <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
+              <ul style="${objectToInlineStyle(styles.consList)}">
+                ${consItems.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
               </ul>
             </div>
           </div>
         </div>`;
       });
       
-      return sharedStyles ? getStyles() + htmlContent : htmlContent;
+      return htmlContent;
     } else {
-      // Generate from form data
       const htmlContent = `
-      <div class="pros-cons-standalone">
-        <h3>${prosConsTitle}</h3>
-        <div class="pros-cons">
-          <div class="pros">
-            <h4>PROS</h4>
-            <ul>
-              ${prosOnly.map(pro => `<li>${pro}</li>`).join('')}
+      <div style="${objectToInlineStyle(styles.prosConsStandalone)}">
+        <h3 style="${objectToInlineStyle(styles.prosConsStandaloneH3)}">${prosConsTitle}</h3>
+        <div style="${objectToInlineStyle(styles.prosCons)}">
+          <div style="${objectToInlineStyle(styles.pros)}">
+            <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
+            <ul style="${objectToInlineStyle(styles.prosList)}">
+              ${prosOnly.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
             </ul>
           </div>
-          <div class="cons">
-            <h4>CONS</h4>
-            <ul>
-              ${consOnly.map(con => `<li>${con}</li>`).join('')}
+          <div style="${objectToInlineStyle(styles.cons)}">
+            <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
+            <ul style="${objectToInlineStyle(styles.consList)}">
+              ${consOnly.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
             </ul>
           </div>
         </div>
       </div>`;
       
-      return sharedStyles ? getStyles() + htmlContent : htmlContent;
+      return htmlContent;
     }
   }
 
-  // Generate HTML for FAQ
   function generateFaqHTML() {
+    const styles = getInlineStyles();
+    const scriptTag = sharedStyles ? getFaqToggleScript() : '';
+    
     if (bulkMode) {
-      // Parse bulk FAQ data
       const faqPairs = bulkFaqData.trim().split('\n\n');
       let faqItems = [];
       
@@ -409,35 +374,33 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       });
       
       const htmlContent = `
-      <div class="faq-container">
-        <h3>Frequently Asked Questions</h3>
+      <div style="${objectToInlineStyle(styles.faqContainer)}">
+        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
         ${faqItems.map(faq => `
-          <div class="faq-item">
-            <div class="faq-question">${faq.question}</div>
-            <div class="faq-answer">${faq.answer}</div>
+          <div style="${objectToInlineStyle(styles.faqItem)}">
+            <div class="faq-question" style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
+            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
           </div>
         `).join('')}
       </div>`;
       
-      return sharedStyles ? getStyles() + htmlContent : htmlContent;
+      return sharedStyles ? scriptTag + htmlContent : htmlContent;
     } else {
-      // Generate from form data
       const htmlContent = `
-      <div class="faq-container">
-        <h3>Frequently Asked Questions</h3>
+      <div style="${objectToInlineStyle(styles.faqContainer)}">
+        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
         ${faqs.map(faq => `
-          <div class="faq-item">
-            <div class="faq-question">${faq.question}</div>
-            <div class="faq-answer">${faq.answer}</div>
+          <div style="${objectToInlineStyle(styles.faqItem)}">
+            <div class="faq-question" style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
+            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
           </div>
         `).join('')}
       </div>`;
       
-      return sharedStyles ? getStyles() + htmlContent : htmlContent;
+      return sharedStyles ? scriptTag + htmlContent : htmlContent;
     }
   }
 
-  // Generate Schema HTML
   function generateSchemaHTML() {
     if (!schemaData) return '';
     
@@ -449,7 +412,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     return htmlContent;
   }
 
-  // Generate combined product + schema HTML
   function generateProductWithSchemaHTML() {
     if (!schemaData) {
       toast({
@@ -460,7 +422,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       return '';
     }
     
-    // Auto-populate schema from product data
     const productSchema = {
       ...schemaData,
       name: productName,
@@ -468,9 +429,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       image: imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
     };
     
-    // Add offers if it doesn't exist
     if (!productSchema.offers && productSchema['@type'] === 'Product') {
-      // Try to extract price from specs
       const priceSpec = specs.find(spec => 
         spec.label.toLowerCase().includes('price') && 
         spec.value.includes('$')
@@ -490,7 +449,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       }
     }
     
-    // Add product specifications
     if (productSchema['@type'] === 'Product' && specs.length > 0) {
       if (!productSchema.additionalProperty) {
         productSchema.additionalProperty = [];
@@ -515,17 +473,14 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     return generateProductHTML() + schemaScript;
   }
 
-  // Generate combined FAQ + schema HTML
   function generateFaqWithSchemaHTML() {
     if (!schemaData || schemaData['@type'] !== 'FAQPage') {
-      // Create a FAQPage schema if needed
       const faqSchema = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": []
       };
       
-      // Use the bulk or normal FAQ data
       const faqItems = bulkMode 
         ? bulkFaqData.trim().split('\n\n').map(pair => {
             const lines = pair.trim().split('\n');
@@ -539,7 +494,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
           }).filter(Boolean)
         : faqs;
       
-      // Add FAQ items to the schema
       faqItems.forEach(faq => {
         faqSchema.mainEntity.push({
           "@type": "Question",
@@ -558,19 +512,16 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       
       return generateFaqHTML() + schemaScript;
     } else {
-      // Use the existing FAQ schema
       return generateFaqHTML() + generateSchemaHTML();
     }
   }
 
-  // Generate HTML based on active tab
   function generateHTML() {
     let htmlContent = '';
     
     switch (activeTab) {
       case 'product':
         if (schemaData && schemaData['@type'] === 'Product') {
-          // If we have a product schema, generate combined HTML
           htmlContent = generateProductWithSchemaHTML();
         } else {
           htmlContent = generateProductHTML();
@@ -581,7 +532,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         break;
       case 'faq':
         if (schemaData && schemaData['@type'] === 'FAQPage') {
-          // If we have a FAQ schema, generate combined HTML
           htmlContent = generateFaqWithSchemaHTML();
         } else {
           htmlContent = generateFaqHTML();
@@ -597,7 +547,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     setGeneratedHTML(htmlContent);
   }
 
-  // Auto-generate schema from product data
   function generateProductSchema() {
     const newSchema = {
       "@context": "https://schema.org",
@@ -607,7 +556,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       "image": imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
     };
     
-    // Try to extract price from specs
     const priceSpec = specs.find(spec => 
       spec.label.toLowerCase().includes('price') && 
       spec.value.includes('$')
@@ -626,7 +574,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       }
     }
     
-    // Add product specifications
     if (specs.length > 0) {
       newSchema.additionalProperty = specs.map(spec => ({
         "@type": "PropertyValue",
@@ -643,7 +590,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     });
   }
 
-  // Auto-generate FAQ schema
   function generateFaqSchema() {
     const faqItems = bulkMode 
       ? bulkFaqData.trim().split('\n\n').map(pair => {
