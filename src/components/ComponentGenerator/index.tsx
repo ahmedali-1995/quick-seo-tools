@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import TabButton from '../UI/TabButton';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
+import { Button } from '../ui/button'; // Add this import
 import CodePreview from '../UI/CodePreview';
 import ProductTab from './ProductTab';
 import ProsConsTab from './ProsConsTab';
