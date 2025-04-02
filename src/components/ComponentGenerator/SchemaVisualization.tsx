@@ -1,13 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-// Use our custom dynamic import shim instead of next/dynamic
-import dynamic from '@/lib/next-dynamic-shim';
-
-// Dynamically import ForceGraph2D with SSR disabled
-const ForceGraph2D = dynamic(
-  () => import('react-force-graph-2d'),
-  { ssr: false }
-);
+import ForceGraph2D from 'react-force-graph-2d';
 
 interface Node {
   id: string;
@@ -33,12 +25,6 @@ interface SchemaVisualizationProps {
 const SchemaVisualization: React.FC<SchemaVisualizationProps> = ({ schemaData }) => {
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
-  const [isBrowser, setIsBrowser] = useState(false);
-
-  useEffect(() => {
-    // Set isBrowser to true when component mounts on client side
-    setIsBrowser(typeof window !== 'undefined');
-  }, []);
 
   useEffect(() => {
     if (schemaData) {
@@ -126,18 +112,18 @@ const SchemaVisualization: React.FC<SchemaVisualizationProps> = ({ schemaData })
     }
   };
 
-  // If not in browser or schema data is empty, return fallback UI
-  if (!isBrowser || graphData.nodes.length === 0) {
+  // Fallback message if ForceGraph2D is not available (server-side rendering)
+  if (typeof window === 'undefined') {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground border rounded">
-        {!graphData.nodes.length ? "No schema data to visualize." : "Loading visualization..."}
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        Loading visualization...
       </div>
     );
   }
 
   return (
     <div className="h-full w-full border rounded">
-      {ForceGraph2D && (
+      {graphData.nodes.length > 0 ? (
         <ForceGraph2D
           graphData={graphData}
           nodeLabel={(node) => node.name}
@@ -155,6 +141,10 @@ const SchemaVisualization: React.FC<SchemaVisualizationProps> = ({ schemaData })
             console.log("Node clicked:", node);
           }}
         />
+      ) : (
+        <div className="flex items-center justify-center h-full text-muted-foreground">
+          No schema data to visualize.
+        </div>
       )}
     </div>
   );
