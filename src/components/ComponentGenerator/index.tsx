@@ -9,7 +9,7 @@ import FaqTab from './FaqTab';
 import SchemaTab from './SchemaTab';
 import { SchemaResult } from '@/utils/schemaUtils';
 import { toast } from '@/components/ui/use-toast';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 const ComponentGenerator: React.FC = () => {
   const [activeTab, setActiveTab] = useState('product');

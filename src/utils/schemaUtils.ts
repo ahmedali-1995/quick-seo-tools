@@ -1,8 +1,26 @@
+
 import axios from 'axios';
 
 export interface SchemaResult {
   "@context": string;
   "@type": string;
+  name?: string;
+  description?: string;
+  image?: string;
+  offers?: {
+    "@type": string;
+    price?: string;
+    priceCurrency?: string;
+    availability?: string;
+    url?: string;
+    [key: string]: any;
+  };
+  additionalProperty?: Array<{
+    "@type": string;
+    name: string;
+    value: string;
+    [key: string]: any;
+  }>;
   [key: string]: any;
 }
 

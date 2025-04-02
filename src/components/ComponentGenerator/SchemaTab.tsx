@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from '../../ui/button';
+import { Button } from '@/components/ui/button';
 import TextField from '../UI/TextField';
 import { toast } from '@/components/ui/use-toast';
 import { 
@@ -21,12 +21,10 @@ import {
   ArrowRight as ArrowRightIcon
 } from 'lucide-react';
 
-// Import our newly created components
 import SchemaVisualization from './SchemaVisualization';
 import SchemaTemplates from './SchemaTemplates';
 import SchemaVersions from './SchemaVersions';
 
-// Import our utilities
 import { 
   extractSchema, 
   extractPageData, 
@@ -36,8 +34,13 @@ import {
   SchemaResult
 } from '@/utils/schemaUtils';
 
-// Import necessary UI components
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "../ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
@@ -73,7 +76,6 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
   const [activeSchemaTab, setActiveSchemaTab] = useState<string>("view");
   const [validationResult, setValidationResult] = useState<{ valid: boolean, errors: string[] } | null>(null);
   
-  // Load and extract data functions
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
   };
@@ -121,23 +123,19 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     
     setIsLoading(true);
     try {
-      // Extract data from the page
       const extractedData = await extractPageData(url);
       
-      // If we don't have schema data yet, create a new one based on the type
       if (!schemaData) {
         if (extractedData['@type']) {
           const newSchema = getSchemaTemplate(extractedData['@type']);
           const mergedSchema = mergeSchemaData(newSchema, extractedData);
           setSchemaData(mergedSchema);
         } else {
-          // No type detected, use a basic Product schema as default
           const newSchema = getSchemaTemplate('Product');
           const mergedSchema = mergeSchemaData(newSchema, extractedData);
           setSchemaData(mergedSchema);
         }
       } else {
-        // Merge extracted data with existing schema
         const mergedSchema = mergeSchemaData(schemaData, extractedData);
         setSchemaData(mergedSchema);
       }
@@ -157,20 +155,16 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     }
   };
 
-  // Schema editing functions
   const updateSchemaField = (path: string, value: any) => {
     if (!schemaData) return;
     
     const newSchema = { ...schemaData };
     
-    // Split the path string into an array of keys
     const keys = path.split('.');
     let current = newSchema;
     
-    // Navigate to the nested property
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
-      // Handle array indices in path
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
@@ -180,7 +174,6 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
       }
     }
     
-    // Set the value at the final key
     const lastKey = keys[keys.length - 1];
     if (lastKey.includes('[') && lastKey.includes(']')) {
       const arrayKey = lastKey.substring(0, lastKey.indexOf('['));
@@ -194,20 +187,16 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     setValidationResult(validateSchema(newSchema));
   };
 
-  // Add a new item to an array in the schema
   const addArrayItem = (path: string, defaultValue: any = "") => {
     if (!schemaData) return;
     
     const newSchema = { ...schemaData };
     
-    // Split the path string into an array of keys
     const keys = path.split('.');
     let current = newSchema;
     
-    // Navigate to the nested property
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      // Handle array indices in path
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
@@ -217,9 +206,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
       }
     }
     
-    // Add new item to the array
     if (Array.isArray(current)) {
-      // Clone the last item if exists, otherwise use default value
       const newItem = current.length > 0 
         ? JSON.parse(JSON.stringify(current[current.length - 1])) 
         : defaultValue;
@@ -231,20 +218,16 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     setValidationResult(validateSchema(newSchema));
   };
 
-  // Remove an item from an array in the schema
   const removeArrayItem = (path: string, index: number) => {
     if (!schemaData) return;
     
     const newSchema = { ...schemaData };
     
-    // Split the path string into an array of keys
     const keys = path.split('.');
     let current = newSchema;
     
-    // Navigate to the nested property
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      // Handle array indices in path
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
@@ -254,7 +237,6 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
       }
     }
     
-    // Remove item from the array
     if (Array.isArray(current) && index >= 0 && index < current.length) {
       current.splice(index, 1);
     }
@@ -263,7 +245,6 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     setValidationResult(validateSchema(newSchema));
   };
 
-  // Load schema from a predefined template
   const loadSchemaType = (schemaType: string) => {
     const newSchema = getSchemaTemplate(schemaType);
     setSchemaData(newSchema);
@@ -275,7 +256,6 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     });
   };
 
-  // Render schema editor fields recursively
   const renderSchemaEditor = (obj: any, path = '') => {
     return Object.entries(obj).map(([key, value]) => {
       const currentPath = path ? `${path}.${key}` : key;
