@@ -186,42 +186,47 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       },
       faqContainer: {
         border: '1px solid #e2e2e2',
-        borderRadius: '8px',
-        padding: '25px',
+        borderRadius: '12px',
+        padding: '28px',
         marginBottom: '30px',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+        boxShadow: '0 6px 16px rgba(90, 44, 130, 0.08)',
         backgroundColor: '#ffffff'
       },
       faqContainerH3: {
         color: '#5a2c82',
         textAlign: 'center',
         marginTop: '0',
-        marginBottom: '25px',
-        fontSize: '24px',
-        fontWeight: '600'
+        marginBottom: '28px',
+        fontSize: '26px',
+        fontWeight: '700',
+        letterSpacing: '-0.5px'
       },
       faqItem: {
-        marginBottom: '15px',
-        border: '1px solid #e6e6e6',
-        borderRadius: '8px',
+        marginBottom: '18px',
+        border: '1px solid #e9e1f3',
+        borderRadius: '10px',
         overflow: 'hidden',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.03)',
-        backgroundColor: '#ffffff'
+        boxShadow: '0 3px 8px rgba(90, 44, 130, 0.04)',
+        backgroundColor: '#ffffff',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
       },
       faqQuestion: {
         backgroundColor: '#f9f6fc',
-        padding: '15px 20px',
-        fontWeight: 'bold',
+        padding: '18px 22px',
+        fontWeight: '600',
         position: 'relative',
         color: '#5a2c82',
-        borderBottom: '1px solid #eee',
-        fontSize: '16px'
+        borderBottom: '1px solid #efe5fa',
+        fontSize: '17px',
+        lineHeight: '1.5',
+        letterSpacing: '-0.2px'
       },
       faqAnswer: {
-        padding: '20px',
-        lineHeight: '1.6',
+        padding: '22px',
+        lineHeight: '1.7',
         color: '#444',
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        fontSize: '16px'
       }
     };
   }
@@ -384,8 +389,12 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
         ${faqItems.map(faq => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
-            <div style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
-            <div style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
+            <div style="${objectToInlineStyle(styles.faqQuestion)}">
+              ${faq.question}
+            </div>
+            <div style="${objectToInlineStyle(styles.faqAnswer)}">
+              ${faq.answer}
+            </div>
           </div>
         `).join('')}
       </div>`;
@@ -397,8 +406,12 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
         ${faqs.map(faq => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
-            <div style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
-            <div style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
+            <div style="${objectToInlineStyle(styles.faqQuestion)}">
+              ${faq.question}
+            </div>
+            <div style="${objectToInlineStyle(styles.faqAnswer)}">
+              ${faq.answer}
+            </div>
           </div>
         `).join('')}
       </div>`;
