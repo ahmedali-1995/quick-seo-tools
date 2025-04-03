@@ -1,4 +1,3 @@
-
 export interface SchemaResult {
   '@context': string;
   '@type': string;
@@ -6,7 +5,6 @@ export interface SchemaResult {
   description?: string;
   image?: string;
   mainEntity?: any[];
-  // Add these missing properties that are used in ComponentGenerator
   offers?: {
     '@type': string;
     price: string;
@@ -19,7 +17,6 @@ export interface SchemaResult {
     name: string;
     value: string;
   }>;
-  // Add other properties as needed
   [key: string]: any;
 }
 
