@@ -185,39 +185,43 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         color: '#5a2c82'
       },
       faqContainer: {
-        border: '1px solid #dfdfdf',
-        padding: '20px',
-        marginBottom: '20px'
+        border: '1px solid #e2e2e2',
+        borderRadius: '8px',
+        padding: '25px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+        backgroundColor: '#ffffff'
       },
       faqContainerH3: {
         color: '#5a2c82',
         textAlign: 'center',
         marginTop: '0',
-        marginBottom: '20px'
+        marginBottom: '25px',
+        fontSize: '24px',
+        fontWeight: '600'
       },
       faqItem: {
-        marginBottom: '10px',
-        border: '1px solid #dfdfdf',
-        borderRadius: '4px',
-        overflow: 'hidden'
+        marginBottom: '15px',
+        border: '1px solid #e6e6e6',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.03)',
+        backgroundColor: '#ffffff'
       },
       faqQuestion: {
         backgroundColor: '#f9f6fc',
-        padding: '10px 15px',
+        padding: '15px 20px',
         fontWeight: 'bold',
-        cursor: 'pointer',
         position: 'relative',
-        color: '#5a2c82'
+        color: '#5a2c82',
+        borderBottom: '1px solid #eee',
+        fontSize: '16px'
       },
       faqAnswer: {
-        padding: '15px',
-        borderTop: '1px solid #dfdfdf',
-        display: 'none'
-      },
-      faqAnswerActive: {
-        padding: '15px',
-        borderTop: '1px solid #dfdfdf',
-        display: 'block'
+        padding: '20px',
+        lineHeight: '1.6',
+        color: '#444',
+        backgroundColor: '#ffffff'
       }
     };
   }
@@ -361,7 +365,6 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
 
   function generateFaqHTML() {
     const styles = getInlineStyles();
-    const scriptTag = sharedStyles ? getFaqToggleScript() : '';
     
     if (bulkMode) {
       const faqPairs = bulkFaqData.trim().split('\n\n');
@@ -381,26 +384,26 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
         ${faqItems.map(faq => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
-            <div class="faq-question" style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
-            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswerActive)}">${faq.answer}</div>
+            <div style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
+            <div style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
           </div>
         `).join('')}
       </div>`;
       
-      return sharedStyles ? scriptTag + htmlContent : htmlContent;
+      return htmlContent;
     } else {
       const htmlContent = `
       <div style="${objectToInlineStyle(styles.faqContainer)}">
         <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
         ${faqs.map(faq => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
-            <div class="faq-question" style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
-            <div class="faq-answer" style="${objectToInlineStyle(styles.faqAnswerActive)}">${faq.answer}</div>
+            <div style="${objectToInlineStyle(styles.faqQuestion)}">${faq.question}</div>
+            <div style="${objectToInlineStyle(styles.faqAnswer)}">${faq.answer}</div>
           </div>
         `).join('')}
       </div>`;
       
-      return sharedStyles ? scriptTag + htmlContent : htmlContent;
+      return htmlContent;
     }
   }
 
