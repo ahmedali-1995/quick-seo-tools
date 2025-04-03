@@ -453,7 +453,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       image: imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
     };
     
-    if (!productSchema.offers && productSchema['@type'] === 'Product') {
+    if (productSchema['@type'] === 'Product') {
       const priceSpec = specs.find(spec => 
         spec.label.toLowerCase().includes('price') && 
         spec.value.includes('$')
@@ -462,7 +462,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       if (priceSpec) {
         const priceMatch = priceSpec.value.match(/\$([0-9]+(\.[0-9]+)?)/);
         if (priceMatch && priceMatch[1]) {
-          productSchema.offers = {
+          productSchema.offers = productSchema.offers || {
             "@type": "Offer",
             "price": priceMatch[1],
             "priceCurrency": "USD",
