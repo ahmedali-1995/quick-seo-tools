@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import TextField from '../UI/TextField';
@@ -18,7 +19,10 @@ import {
   FolderOpen as FolderOpenIcon,
   GitCompare as DiffIcon,
   CheckCircle as CheckCircleIcon,
-  ArrowRight as ArrowRightIcon
+  ArrowRight as ArrowRightIcon,
+  Upload as UploadIcon,
+  FileJson as FileJsonIcon,
+  Link as LinkIcon
 } from 'lucide-react';
 
 import SchemaVisualization from './SchemaVisualization';
@@ -43,6 +47,8 @@ import {
 } from "../ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Textarea } from "../ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
 
 interface SchemaTabProps {
   url: string;
@@ -75,6 +81,14 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
 }) => {
   const [activeSchemaTab, setActiveSchemaTab] = useState<string>("view");
   const [validationResult, setValidationResult] = useState<{ valid: boolean, errors: string[] } | null>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importSource, setImportSource] = useState<'json' | 'url'>('json');
+  const [jsonInput, setJsonInput] = useState('');
+  const [importUrl, setImportUrl] = useState('');
+  const [customPropertyPath, setCustomPropertyPath] = useState('');
+  const [customPropertyValue, setCustomPropertyValue] = useState('');
+  const [customPropertyType, setCustomPropertyType] = useState<'string' | 'number' | 'boolean' | 'object' | 'array'>('string');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
@@ -168,8 +182,23 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
+        
+        // Initialize array if it doesn't exist
+        if (!current[arrayKey]) {
+          current[arrayKey] = [];
+        }
+        
+        // Expand array if needed
+        while (current[arrayKey].length <= index) {
+          current[arrayKey].push({});
+        }
+        
         current = current[arrayKey][index];
       } else {
+        // Initialize object if it doesn't exist
+        if (!current[key]) {
+          current[key] = {};
+        }
         current = current[key];
       }
     }
@@ -178,6 +207,17 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     if (lastKey.includes('[') && lastKey.includes(']')) {
       const arrayKey = lastKey.substring(0, lastKey.indexOf('['));
       const index = parseInt(lastKey.substring(lastKey.indexOf('[') + 1, lastKey.indexOf(']')));
+      
+      // Initialize array if it doesn't exist
+      if (!current[arrayKey]) {
+        current[arrayKey] = [];
+      }
+      
+      // Expand array if needed
+      while (current[arrayKey].length <= index) {
+        current[arrayKey].push("");
+      }
+      
       current[arrayKey][index] = value;
     } else {
       current[lastKey] = value;
@@ -200,8 +240,23 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['));
         const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
+        
+        // Initialize array if it doesn't exist
+        if (!current[arrayKey]) {
+          current[arrayKey] = [];
+        }
+        
+        // Expand array if needed
+        while (current[arrayKey].length <= index) {
+          current[arrayKey].push({});
+        }
+        
         current = current[arrayKey][index];
       } else {
+        // Initialize object if it doesn't exist
+        if (!current[key]) {
+          current[key] = Array.isArray(defaultValue) ? [] : {};
+        }
         current = current[key];
       }
     }
@@ -256,6 +311,128 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
     });
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const parsedSchema = JSON.parse(content);
+        setSchemaData(parsedSchema);
+        setValidationResult(validateSchema(parsedSchema));
+        setImportModalOpen(false);
+        
+        toast({
+          title: "Schema Imported",
+          description: "Schema has been successfully imported from file"
+        });
+      } catch (error) {
+        toast({
+          title: "Import Error",
+          description: "Failed to parse JSON file",
+          variant: "destructive"
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleJsonImport = () => {
+    try {
+      const parsedSchema = JSON.parse(jsonInput);
+      setSchemaData(parsedSchema);
+      setValidationResult(validateSchema(parsedSchema));
+      setImportModalOpen(false);
+      setJsonInput('');
+      
+      toast({
+        title: "Schema Imported",
+        description: "Schema has been successfully imported from JSON"
+      });
+    } catch (error) {
+      toast({
+        title: "Import Error",
+        description: "Failed to parse JSON input",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUrlImport = async () => {
+    if (!importUrl) {
+      toast({
+        title: "URL Required",
+        description: "Please enter a valid URL to import schema from",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const result = await extractSchema(importUrl);
+      setSchemaData(result);
+      setValidationResult(validateSchema(result));
+      setImportModalOpen(false);
+      setImportUrl('');
+      
+      toast({
+        title: "Schema Imported",
+        description: "Schema has been successfully imported from URL"
+      });
+    } catch (error) {
+      toast({
+        title: "Import Error",
+        description: error instanceof Error ? error.message : "Failed to import schema from URL",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to add a custom property at any specified path
+  const addCustomProperty = () => {
+    if (!schemaData || !customPropertyPath) return;
+
+    let value: any = customPropertyValue;
+    
+    // Convert value based on selected type
+    switch (customPropertyType) {
+      case 'number':
+        value = Number(customPropertyValue);
+        break;
+      case 'boolean':
+        value = customPropertyValue.toLowerCase() === 'true';
+        break;
+      case 'object':
+        try {
+          value = JSON.parse(customPropertyValue);
+        } catch (e) {
+          value = {};
+        }
+        break;
+      case 'array':
+        try {
+          value = JSON.parse(customPropertyValue);
+        } catch (e) {
+          value = [];
+        }
+        break;
+    }
+    
+    updateSchemaField(customPropertyPath, value);
+    setCustomPropertyPath('');
+    setCustomPropertyValue('');
+    
+    toast({
+      title: "Custom Property Added",
+      description: `Property at ${customPropertyPath} has been added/updated`
+    });
+  };
+
   const renderSchemaEditor = (obj: any, path = '') => {
     return Object.entries(obj).map(([key, value]) => {
       const currentPath = path ? `${path}.${key}` : key;
@@ -297,7 +474,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
                   <div key={`${currentPath}[${index}]`} className="pl-4 mb-2 flex items-center">
                     <span className="text-sm text-muted-foreground mr-2">[{index}]:</span>
                     <TextField
-                      value={item as string}
+                      value={String(item)}
                       onChange={(e) => updateSchemaField(`${currentPath}[${index}]`, e.target.value)}
                       className="flex-1"
                     />
@@ -327,7 +504,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
           <div key={currentPath} className="mb-3 flex items-center">
             <div className="min-w-[150px] font-medium">{key}:</div>
             <TextField
-              value={value as string}
+              value={String(value)}
               onChange={(e) => updateSchemaField(currentPath, e.target.value)}
               className="flex-1"
             />
@@ -369,7 +546,7 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Select onValueChange={loadSchemaType}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select schema type" />
@@ -380,6 +557,23 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
               ))}
             </SelectContent>
           </Select>
+          
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => setImportModalOpen(true)}
+          >
+            <UploadIcon className="h-4 w-4" />
+            Import Schema
+          </Button>
+          
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            accept=".json" 
+            style={{ display: 'none' }} 
+            onChange={handleFileUpload}
+          />
         </div>
       </div>
       
@@ -432,6 +626,53 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
             </TabsContent>
             
             <TabsContent value="edit" className="p-4 mt-0">
+              <div className="mb-6 p-4 bg-primary/5 rounded-lg">
+                <h3 className="text-lg font-medium mb-4">Add Custom Property</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <TextField
+                    label="Property Path"
+                    value={customPropertyPath}
+                    onChange={(e) => setCustomPropertyPath(e.target.value)}
+                    placeholder="e.g., author.name or offers.price"
+                    className="col-span-1"
+                  />
+                  <div className="col-span-1">
+                    <label className="block text-sm font-medium mb-2">Type</label>
+                    <Select 
+                      value={customPropertyType} 
+                      onValueChange={(value) => setCustomPropertyType(value as any)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="string">String</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="boolean">Boolean</SelectItem>
+                        <SelectItem value="object">Object</SelectItem>
+                        <SelectItem value="array">Array</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <TextField
+                    label="Value"
+                    value={customPropertyValue}
+                    onChange={(e) => setCustomPropertyValue(e.target.value)}
+                    placeholder={customPropertyType === 'object' ? '{"key": "value"}' : 
+                                customPropertyType === 'array' ? '["item1", "item2"]' : 
+                                "Property value"}
+                    className="col-span-1"
+                  />
+                </div>
+                <Button 
+                  className="mt-4"
+                  onClick={addCustomProperty}
+                  disabled={!customPropertyPath || !customPropertyValue}
+                >
+                  Add Property
+                </Button>
+              </div>
+              
               <div className="max-h-[400px] overflow-auto">
                 {renderSchemaEditor(schemaData)}
               </div>
@@ -458,6 +699,77 @@ const SchemaTab: React.FC<SchemaTabProps> = ({
           </Tabs>
         </div>
       )}
+      
+      {/* Import Schema Modal */}
+      <Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Import Schema</DialogTitle>
+            <DialogDescription>
+              Import schema data from a JSON file, pasted JSON, or a URL.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <Tabs defaultValue="json" className="w-full">
+              <TabsList className="grid grid-cols-3 mb-4">
+                <TabsTrigger value="json" onClick={() => setImportSource('json')}>
+                  <FileJsonIcon className="h-4 w-4 mr-2" />
+                  JSON
+                </TabsTrigger>
+                <TabsTrigger value="file">
+                  <FolderOpenIcon className="h-4 w-4 mr-2" />
+                  File Upload
+                </TabsTrigger>
+                <TabsTrigger value="url" onClick={() => setImportSource('url')}>
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                  URL
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="json">
+                <Textarea
+                  placeholder="Paste JSON schema here..."
+                  value={jsonInput}
+                  onChange={(e) => setJsonInput(e.target.value)}
+                  className="h-[200px]"
+                />
+              </TabsContent>
+              
+              <TabsContent value="file" className="flex justify-center items-center h-[200px]">
+                <Button onClick={() => fileInputRef.current?.click()}>
+                  <UploadIcon className="h-4 w-4 mr-2" />
+                  Select JSON File
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="url">
+                <TextField
+                  label="Schema URL"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  placeholder="https://example.com/schema.json"
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={
+                (importSource === 'json' && !jsonInput) || 
+                (importSource === 'url' && !importUrl)
+              }
+              onClick={importSource === 'json' ? handleJsonImport : handleUrlImport}
+            >
+              Import
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

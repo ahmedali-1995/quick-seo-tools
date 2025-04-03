@@ -189,40 +189,45 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         borderRadius: '12px',
         padding: '28px',
         marginBottom: '30px',
-        boxShadow: '0 6px 16px rgba(90, 44, 130, 0.08)',
-        backgroundColor: '#ffffff'
+        boxShadow: '0 8px 24px rgba(90, 44, 130, 0.1)',
+        backgroundColor: '#ffffff',
+        maxWidth: '900px',
+        margin: '0 auto'
       },
       faqContainerH3: {
         color: '#5a2c82',
         textAlign: 'center',
         marginTop: '0',
-        marginBottom: '28px',
-        fontSize: '26px',
+        marginBottom: '32px',
+        fontSize: '28px',
         fontWeight: '700',
-        letterSpacing: '-0.5px'
+        letterSpacing: '-0.5px',
+        borderBottom: '2px solid #efe5fa',
+        paddingBottom: '16px'
       },
       faqItem: {
-        marginBottom: '18px',
+        marginBottom: '24px',
         border: '1px solid #e9e1f3',
         borderRadius: '10px',
         overflow: 'hidden',
-        boxShadow: '0 3px 8px rgba(90, 44, 130, 0.04)',
+        boxShadow: '0 4px 12px rgba(90, 44, 130, 0.06)',
         backgroundColor: '#ffffff',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        borderLeft: '4px solid #5a2c82'
       },
       faqQuestion: {
         backgroundColor: '#f9f6fc',
-        padding: '18px 22px',
+        padding: '20px 24px',
         fontWeight: '600',
-        position: 'relative',
         color: '#5a2c82',
         borderBottom: '1px solid #efe5fa',
-        fontSize: '17px',
+        fontSize: '18px',
         lineHeight: '1.5',
-        letterSpacing: '-0.2px'
+        letterSpacing: '-0.2px',
+        position: 'relative'
       },
       faqAnswer: {
-        padding: '22px',
+        padding: '24px',
         lineHeight: '1.7',
         color: '#444',
         backgroundColor: '#ffffff',
@@ -387,7 +392,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       const htmlContent = `
       <div style="${objectToInlineStyle(styles.faqContainer)}">
         <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
-        ${faqItems.map(faq => `
+        ${faqItems.map((faq, index) => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
             <div style="${objectToInlineStyle(styles.faqQuestion)}">
               ${faq.question}
@@ -404,7 +409,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       const htmlContent = `
       <div style="${objectToInlineStyle(styles.faqContainer)}">
         <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
-        ${faqs.map(faq => `
+        ${faqs.map((faq, index) => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
             <div style="${objectToInlineStyle(styles.faqQuestion)}">
               ${faq.question}

@@ -62,24 +62,23 @@ const FaqTab: React.FC<FaqTabProps> = ({
     return (
       <div className="mt-6 border rounded-lg p-6 bg-accent/40 shadow-md">
         <h3 className="text-xl font-semibold text-primary mb-6 text-center">FAQ Preview</h3>
-        <Accordion type="multiple" defaultValue={faqItems.map((_, i) => `item-${i}`)}>
+        <div className="space-y-5">
           {faqItems.map((faq, i) => (
-            <AccordionItem 
+            <div 
               key={`preview-${i}`} 
-              value={`item-${i}`} 
-              className="border border-primary/30 rounded-md mb-4 overflow-hidden shadow-sm hover:shadow transition-all duration-200"
+              className="border border-primary/30 rounded-md overflow-hidden shadow-md hover:shadow-lg transition-all duration-200"
             >
-              <AccordionTrigger className="px-5 py-4 bg-primary/10 hover:bg-primary/15 font-medium text-primary">
+              <div className="px-6 py-4 bg-primary/10 font-medium text-primary text-lg">
                 {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="px-5 py-4 bg-white/90">
-                <div className="prose prose-sm max-w-none text-gray-700">
+              </div>
+              <div className="px-6 py-5 bg-white/90">
+                <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
                   {faq.answer}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
+              </div>
+            </div>
           ))}
-        </Accordion>
+        </div>
       </div>
     );
   };
