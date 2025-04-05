@@ -25,6 +25,8 @@ interface TableTabProps {
   setTableCaption: (caption: string) => void;
   tableStyle: 'basic' | 'striped' | 'bordered' | 'minimal';
   setTableStyle: (style: 'basic' | 'striped' | 'bordered' | 'minimal') => void;
+  headerColor: string;
+  setHeaderColor: (color: string) => void;
 }
 
 const TableTab: React.FC<TableTabProps> = ({
@@ -43,7 +45,9 @@ const TableTab: React.FC<TableTabProps> = ({
   tableCaption,
   setTableCaption,
   tableStyle,
-  setTableStyle
+  setTableStyle,
+  headerColor,
+  setHeaderColor
 }) => {
   const isMobile = useIsMobile();
   const [bulkTableData, setBulkTableData] = useState('');
@@ -139,6 +143,18 @@ const TableTab: React.FC<TableTabProps> = ({
     setTableData(newData);
   };
 
+  // Predefined color options
+  const colorOptions = [
+    { name: 'Default', value: '' },
+    { name: 'Purple', value: '#5a2c82' },
+    { name: 'Blue', value: '#2c5282' },
+    { name: 'Green', value: '#2c8257' },
+    { name: 'Teal', value: '#2c8275' },
+    { name: 'Red', value: '#822c2c' },
+    { name: 'Orange', value: '#82572c' },
+    { name: 'Gray', value: '#4a5568' },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 items-center mb-6">
@@ -179,6 +195,41 @@ const TableTab: React.FC<TableTabProps> = ({
           placeholder="Enter table caption (optional)"
           className="mt-1"
         />
+      </div>
+
+      <div className="space-y-3">
+        <Label>Header Color</Label>
+        <div className="grid grid-cols-4 gap-2 mt-1">
+          {colorOptions.map((color) => (
+            <div
+              key={color.value}
+              onClick={() => setHeaderColor(color.value)}
+              className={`h-10 rounded-md cursor-pointer flex items-center justify-center text-sm transition-all ${
+                headerColor === color.value ? 'ring-2 ring-primary ring-offset-2' : 'hover:opacity-80'
+              }`}
+              style={{ 
+                backgroundColor: color.value || '#f3f4f6',
+                color: color.value ? '#ffffff' : 'inherit'
+              }}
+            >
+              {color.name}
+            </div>
+          ))}
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={headerColor || '#5a2c82'}
+              onChange={(e) => setHeaderColor(e.target.value)}
+              className="w-10 h-10 rounded cursor-pointer"
+            />
+            <Input
+              value={headerColor}
+              onChange={(e) => setHeaderColor(e.target.value)}
+              placeholder="#HEX"
+              className="w-20"
+            />
+          </div>
+        </div>
       </div>
       
       <div className="flex flex-wrap gap-4 mb-4">
@@ -355,10 +406,10 @@ const TableTab: React.FC<TableTabProps> = ({
             {hasHeader && (
               <thead>
                 <tr className={
-                  tableStyle === 'bordered' ? 'bg-muted/50 border-b border-gray-300' : 
+                  tableStyle === 'bordered' ? 'border-b border-gray-300' : 
                   tableStyle === 'minimal' ? 'border-b-2 border-gray-400' : 
-                  'bg-muted/50 border-b border-gray-200'
-                }>
+                  'border-b border-gray-200'
+                } style={{backgroundColor: headerColor || (tableStyle === 'minimal' ? 'transparent' : '#f3f4f6')}}>
                   {tableHeaders.map((header, index) => (
                     <th 
                       key={index} 
@@ -367,6 +418,7 @@ const TableTab: React.FC<TableTabProps> = ({
                         tableStyle === 'minimal' ? 'p-3 text-left font-medium' : 
                         'p-3 text-left font-medium'
                       }
+                      style={{color: headerColor ? '#ffffff' : 'inherit'}}
                     >
                       {header}
                     </th>

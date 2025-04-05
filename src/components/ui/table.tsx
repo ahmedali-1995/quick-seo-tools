@@ -5,12 +5,13 @@ import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean }
->(({ className, sortable, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
+>(({ className, sortable, headerColor, ...props }, ref) => (
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", sortable && "js-sortable-table", className)}
+      data-header-color={headerColor}
       {...props}
     />
   </div>
@@ -20,9 +21,20 @@ Table.displayName = "Table"
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
-))
+>(({ className, ...props }, ref) => {
+  // Get header color from the parent table if available
+  const headerColor = props['data-header-color'] || '';
+  const style = headerColor ? { backgroundColor: headerColor } : {};
+  
+  return (
+    <thead 
+      ref={ref} 
+      className={cn("[&_tr]:border-b", className)} 
+      style={style}
+      {...props} 
+    />
+  )
+})
 TableHeader.displayName = "TableHeader"
 
 const TableBody = React.forwardRef<
@@ -71,18 +83,26 @@ TableRow.displayName = "TableRow"
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement> & { sortable?: boolean }
->(({ className, sortable, ...props }, ref) => (
-  <th
-    ref={ref}
-    className={cn(
-      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
-      sortable && "cursor-pointer hover:bg-accent/20 select-none",
-      className
-    )}
-    {...sortable && { 'data-sortable': true }}
-    {...props}
-  />
-))
+>(({ className, sortable, ...props }, ref) => {
+  // Check if parent has a header color
+  const table = React.useContext(TableContext);
+  const headerColor = table?.headerColor;
+  const style = headerColor ? { color: '#ffffff', ...props.style } : props.style;
+  
+  return (
+    <th
+      ref={ref}
+      className={cn(
+        "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+        sortable && "cursor-pointer hover:bg-accent/20 select-none",
+        className
+      )}
+      {...sortable && { 'data-sortable': true }}
+      style={style}
+      {...props}
+    />
+  )
+})
 TableHead.displayName = "TableHead"
 
 const TableCell = React.forwardRef<
@@ -116,8 +136,30 @@ const TableCaption = React.forwardRef<
 ))
 TableCaption.displayName = "TableCaption"
 
+// Create a context to pass header color information down to child components
+interface TableContextValue {
+  headerColor?: string;
+}
+
+const TableContext = React.createContext<TableContextValue | null>(null);
+
+// Wrap the Table component to provide context
+const TableWithContext = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
+>((props, ref) => {
+  const { headerColor, ...restProps } = props;
+  
+  return (
+    <TableContext.Provider value={{ headerColor }}>
+      <Table ref={ref} headerColor={headerColor} {...restProps} />
+    </TableContext.Provider>
+  );
+});
+TableWithContext.displayName = "Table";
+
 export {
-  Table,
+  TableWithContext as Table,
   TableHeader,
   TableBody,
   TableFooter,
