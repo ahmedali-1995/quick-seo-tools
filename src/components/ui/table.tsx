@@ -4,13 +4,14 @@ import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
->(({ className, sortable, headerColor, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string; borderRadius?: string }
+>(({ className, sortable, headerColor, borderRadius, ...props }, ref) => (
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", sortable && "js-sortable-table", className)}
       data-header-color={headerColor}
+      style={borderRadius ? { borderRadius } : {}}
       {...props}
     />
   </div>
@@ -20,6 +21,7 @@ Table.displayName = "Table"
 // Create a context to pass header color information down to child components
 interface TableContextValue {
   headerColor?: string;
+  borderRadius?: string;
 }
 
 const TableContext = React.createContext<TableContextValue | null>(null);
@@ -31,9 +33,16 @@ const TableHeader = React.forwardRef<
   // Access the context to get header color
   const context = React.useContext(TableContext);
   const headerColor = context?.headerColor || '';
+  const borderRadius = context?.borderRadius;
   
   // Apply header color as background if provided
-  const style = headerColor ? { backgroundColor: headerColor } : {};
+  const style: React.CSSProperties = headerColor ? { backgroundColor: headerColor } : {};
+  
+  // If borderRadius is provided, round the top corners
+  if (borderRadius) {
+    style.borderTopLeftRadius = borderRadius;
+    style.borderTopRightRadius = borderRadius;
+  }
   
   return (
     <thead 
@@ -150,13 +159,13 @@ TableCaption.displayName = "TableCaption"
 // Wrap the Table component to provide context
 const TableWithContext = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string; borderRadius?: string }
 >((props, ref) => {
-  const { headerColor, ...restProps } = props;
+  const { headerColor, borderRadius, ...restProps } = props;
   
   return (
-    <TableContext.Provider value={{ headerColor }}>
-      <Table ref={ref} headerColor={headerColor} {...restProps} />
+    <TableContext.Provider value={{ headerColor, borderRadius }}>
+      <Table ref={ref} headerColor={headerColor} borderRadius={borderRadius} {...restProps} />
     </TableContext.Provider>
   );
 });
