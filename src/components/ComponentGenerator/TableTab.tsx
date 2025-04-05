@@ -6,7 +6,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Trash2, MoveVertical, Table2, TableProperties, TableCellsMerge } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Slider } from '@/components/ui/slider';
 
 interface TableTabProps {
   bulkMode: boolean;
@@ -27,8 +26,6 @@ interface TableTabProps {
   setTableStyle: (style: 'basic' | 'striped' | 'bordered' | 'minimal') => void;
   headerColor: string;
   setHeaderColor: (color: string) => void;
-  borderRadius: string;
-  setBorderRadius: (radius: string) => void;
 }
 
 const TableTab: React.FC<TableTabProps> = ({
@@ -49,9 +46,7 @@ const TableTab: React.FC<TableTabProps> = ({
   tableStyle,
   setTableStyle,
   headerColor,
-  setHeaderColor,
-  borderRadius,
-  setBorderRadius
+  setHeaderColor
 }) => {
   const isMobile = useIsMobile();
   const [bulkTableData, setBulkTableData] = useState('');
@@ -231,47 +226,6 @@ const TableTab: React.FC<TableTabProps> = ({
           </div>
         </div>
       </div>
-
-      <div className="space-y-3">
-        <Label>Border Radius</Label>
-        <div className="flex items-center gap-4">
-          <Slider
-            defaultValue={[0]}
-            value={[parseInt(borderRadius) || 0]}
-            onValueChange={(values) => setBorderRadius(`${values[0]}px`)}
-            max={24}
-            step={2}
-            className="w-full max-w-[300px]"
-          />
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              value={parseInt(borderRadius) || 0}
-              onChange={(e) => setBorderRadius(`${e.target.value}px`)}
-              className="w-20"
-              min={0}
-              max={24}
-            />
-            <span className="text-sm text-muted-foreground">px</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          {[0, 4, 8, 12, 16, 20].map((radius) => (
-            <div
-              key={radius}
-              onClick={() => setBorderRadius(`${radius}px`)}
-              className={`h-8 w-12 flex items-center justify-center text-xs border rounded-md cursor-pointer transition-all ${
-                parseInt(borderRadius) === radius ? 'bg-primary/20 border-primary' : 'hover:bg-muted'
-              }`}
-              style={{
-                borderRadius: `${Math.min(radius, 8)}px`,
-              }}
-            >
-              {radius}px
-            </div>
-          ))}
-        </div>
-      </div>
       
       <div className="flex flex-wrap gap-4 mb-4">
         <Label className="w-full font-medium text-lg">Table Style</Label>
@@ -442,10 +396,6 @@ const TableTab: React.FC<TableTabProps> = ({
               tableStyle === 'minimal' ? '' : 
               'border-t border-gray-200'
             }`}
-            style={{ 
-              borderRadius: borderRadius || undefined,
-              overflow: borderRadius ? 'hidden' : undefined
-            }}
           >
             {tableCaption && <caption className="text-sm text-muted-foreground p-2">{tableCaption}</caption>}
             {hasHeader && (
@@ -454,11 +404,7 @@ const TableTab: React.FC<TableTabProps> = ({
                   tableStyle === 'bordered' ? 'border-b border-gray-300' : 
                   tableStyle === 'minimal' ? 'border-b-2 border-gray-400' : 
                   'border-b border-gray-200'
-                } style={{ 
-                  backgroundColor: headerColor || (tableStyle === 'minimal' ? 'transparent' : '#f3f4f6'),
-                  borderTopLeftRadius: borderRadius || undefined,
-                  borderTopRightRadius: borderRadius || undefined
-                }}>
+                } style={{ backgroundColor: headerColor || (tableStyle === 'minimal' ? 'transparent' : '#f3f4f6') }}>
                   {tableHeaders.map((header, index) => (
                     <th 
                       key={index} 
@@ -467,11 +413,7 @@ const TableTab: React.FC<TableTabProps> = ({
                         tableStyle === 'minimal' ? 'p-3 text-left font-medium' : 
                         'p-3 text-left font-medium'
                       }
-                      style={{ 
-                        color: headerColor ? '#ffffff' : 'inherit',
-                        ...(index === 0 && { borderTopLeftRadius: borderRadius || undefined }),
-                        ...(index === tableHeaders.length - 1 && { borderTopRightRadius: borderRadius || undefined })
-                      }}
+                      style={{ color: headerColor ? '#ffffff' : 'inherit' }}
                     >
                       {header}
                     </th>
@@ -505,10 +447,6 @@ const TableTab: React.FC<TableTabProps> = ({
                         tableStyle === 'minimal' ? 'p-3' : 
                         'p-3'
                       }
-                      style={{
-                        ...(rowIndex === tableData.length - 1 && cellIndex === 0 && !hasHeader && { borderBottomLeftRadius: borderRadius || undefined }),
-                        ...(rowIndex === tableData.length - 1 && cellIndex === row.length - 1 && !hasHeader && { borderBottomRightRadius: borderRadius || undefined })
-                      }}
                     >
                       {cell}
                     </td>

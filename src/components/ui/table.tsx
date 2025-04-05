@@ -2,27 +2,24 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-// Update the Table interface to include borderRadius prop
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string; borderRadius?: string }
->(({ className, sortable, headerColor, borderRadius, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
+>(({ className, sortable, headerColor, ...props }, ref) => (
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", sortable && "js-sortable-table", className)}
       data-header-color={headerColor}
-      style={{ borderRadius: borderRadius || undefined }}
       {...props}
     />
   </div>
 ))
 Table.displayName = "Table"
 
-// Create a context to pass table styling information down to child components
+// Create a context to pass header color information down to child components
 interface TableContextValue {
   headerColor?: string;
-  borderRadius?: string;
 }
 
 const TableContext = React.createContext<TableContextValue | null>(null);
@@ -31,16 +28,12 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  // Access the context to get styling info
+  // Access the context to get header color
   const context = React.useContext(TableContext);
   const headerColor = context?.headerColor || '';
-  const borderRadius = context?.borderRadius || '';
   
-  // Apply styling
-  const style: React.CSSProperties = { 
-    ...(headerColor ? { backgroundColor: headerColor } : {}),
-    ...(borderRadius ? { borderTopLeftRadius: borderRadius, borderTopRightRadius: borderRadius } : {})
-  };
+  // Apply header color as background if provided
+  const style = headerColor ? { backgroundColor: headerColor } : {};
   
   return (
     <thead 
@@ -100,7 +93,7 @@ const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement> & { sortable?: boolean }
 >(({ className, sortable, ...props }, ref) => {
-  // Access the context to get styling info
+  // Access the context to get header color
   const context = React.useContext(TableContext);
   const headerColor = context?.headerColor;
   
@@ -157,13 +150,13 @@ TableCaption.displayName = "TableCaption"
 // Wrap the Table component to provide context
 const TableWithContext = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string; borderRadius?: string }
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
 >((props, ref) => {
-  const { headerColor, borderRadius, ...restProps } = props;
+  const { headerColor, ...restProps } = props;
   
   return (
-    <TableContext.Provider value={{ headerColor, borderRadius }}>
-      <Table ref={ref} headerColor={headerColor} borderRadius={borderRadius} {...restProps} />
+    <TableContext.Provider value={{ headerColor }}>
+      <Table ref={ref} headerColor={headerColor} {...restProps} />
     </TableContext.Provider>
   );
 });
