@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,12 +97,10 @@ const TableTab: React.FC<TableTabProps> = ({
   };
   
   const handleBulkDataParsing = () => {
-    // Handle TSV/CSV parsing
     const rows = bulkTableData.trim().split('\n');
     let parsedData: string[][] = [];
     let parsedHeaders: string[] = [];
     
-    // Check if the data is tab-separated or comma-separated
     const separator = rows[0].includes('\t') ? '\t' : ',';
     
     rows.forEach((row, rowIndex) => {
@@ -117,7 +114,6 @@ const TableTab: React.FC<TableTabProps> = ({
     });
     
     if (!hasHeader) {
-      // Generate generic headers if no header row
       parsedHeaders = Array(parsedData[0]?.length || 0)
         .fill(0)
         .map((_, i) => `Column ${i + 1}`);
@@ -143,7 +139,6 @@ const TableTab: React.FC<TableTabProps> = ({
     setTableData(newData);
   };
 
-  // Predefined color options
   const colorOptions = [
     { name: 'Default', value: '' },
     { name: 'Purple', value: '#5a2c82' },
@@ -409,7 +404,7 @@ const TableTab: React.FC<TableTabProps> = ({
                   tableStyle === 'bordered' ? 'border-b border-gray-300' : 
                   tableStyle === 'minimal' ? 'border-b-2 border-gray-400' : 
                   'border-b border-gray-200'
-                } style={{backgroundColor: headerColor || (tableStyle === 'minimal' ? 'transparent' : '#f3f4f6')}}>
+                } style={{ backgroundColor: headerColor || (tableStyle === 'minimal' ? 'transparent' : '#f3f4f6') }}>
                   {tableHeaders.map((header, index) => (
                     <th 
                       key={index} 
@@ -418,7 +413,7 @@ const TableTab: React.FC<TableTabProps> = ({
                         tableStyle === 'minimal' ? 'p-3 text-left font-medium' : 
                         'p-3 text-left font-medium'
                       }
-                      style={{color: headerColor ? '#ffffff' : 'inherit'}}
+                      style={{ color: headerColor ? '#ffffff' : 'inherit' }}
                     >
                       {header}
                     </th>

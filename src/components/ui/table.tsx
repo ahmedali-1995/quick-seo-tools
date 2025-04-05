@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -18,12 +17,22 @@ const Table = React.forwardRef<
 ))
 Table.displayName = "Table"
 
+// Create a context to pass header color information down to child components
+interface TableContextValue {
+  headerColor?: string;
+}
+
+const TableContext = React.createContext<TableContextValue | null>(null);
+
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  // Get header color from the parent table if available
-  const headerColor = props['data-header-color'] || '';
+  // Access the context to get header color
+  const context = React.useContext(TableContext);
+  const headerColor = context?.headerColor || '';
+  
+  // Apply header color as background if provided
   const style = headerColor ? { backgroundColor: headerColor } : {};
   
   return (
@@ -84,9 +93,11 @@ const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement> & { sortable?: boolean }
 >(({ className, sortable, ...props }, ref) => {
-  // Check if parent has a header color
-  const table = React.useContext(TableContext);
-  const headerColor = table?.headerColor;
+  // Access the context to get header color
+  const context = React.useContext(TableContext);
+  const headerColor = context?.headerColor;
+  
+  // If header has a color, set text to white for better contrast
   const style = headerColor ? { color: '#ffffff', ...props.style } : props.style;
   
   return (
@@ -135,13 +146,6 @@ const TableCaption = React.forwardRef<
   />
 ))
 TableCaption.displayName = "TableCaption"
-
-// Create a context to pass header color information down to child components
-interface TableContextValue {
-  headerColor?: string;
-}
-
-const TableContext = React.createContext<TableContextValue | null>(null);
 
 // Wrap the Table component to provide context
 const TableWithContext = React.forwardRef<
