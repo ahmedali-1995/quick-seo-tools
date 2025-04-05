@@ -7,6 +7,7 @@ import ProductTab from './ProductTab';
 import ProsConsTab from './ProsConsTab';
 import FaqTab from './FaqTab';
 import SchemaTab from './SchemaTab';
+import TakeawayTab from './TakeawayTab';
 import { SchemaResult } from '@/utils/schemaUtils';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -94,6 +95,37 @@ A: Installation is simple. Just unpack the box, connect the power cable, and fol
 
 Q: What is the warranty period?
 A: All our products come with a standard 2-year warranty that covers manufacturing defects.`);
+
+  const [takeaways, setTakeaways] = useState([
+    { 
+      title: 'Research Note', 
+      content: "The Women's Health Study found that women over 45 who took 600 IU of Vitamin E every other day had a 24% reduction in cardiovascular death risk, though overall heart disease rates were unchanged.", 
+      type: 'research',
+      icon: 'BookOpen'
+    },
+    { 
+      title: 'Important Safety Notice', 
+      content: "High-dose Vitamin E supplements (400 IU/day or more) should not be taken without medical supervision, especially if you take blood thinners, aspirin, or are scheduled for surgery.", 
+      type: 'safety',
+      icon: 'AlertTriangle'
+    },
+    { 
+      title: 'Nutrition Tip', 
+      content: "Since Vitamin E is fat-soluble, consuming it with some healthy fat improves absorption. Add olive oil to your spinach salad or eat nuts with your fruits to maximize nutrient uptake.", 
+      type: 'tip',
+      icon: 'Lightbulb'
+    }
+  ]);
+  
+  const [bulkTakeawayData, setBulkTakeawayData] = useState(
+`Research Note
+The Women's Health Study found that women over 45 who took 600 IU of Vitamin E every other day had a 24% reduction in cardiovascular death risk, though overall heart disease rates were unchanged.
+
+Important Safety Notice
+High-dose Vitamin E supplements (400 IU/day or more) should not be taken without medical supervision, especially if you take blood thinners, aspirin, or are scheduled for surgery.
+
+Nutrition Tip
+Since Vitamin E is fat-soluble, consuming it with some healthy fat improves absorption. Add olive oil to your spinach salad or eat nuts with your fruits to maximize nutrient uptake.`);
 
   function getInlineStyles() {
     return {
@@ -256,6 +288,93 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         color: '#444',
         backgroundColor: '#ffffff',
         fontSize: '16px'
+      },
+      takeawayContainer: {
+        padding: '0',
+        margin: '20px 0',
+        maxWidth: '900px'
+      },
+      researchNote: {
+        backgroundColor: '#e0f2fe',
+        borderLeft: '4px solid #0ea5e9',
+        padding: '20px',
+        margin: '15px 0',
+        borderRadius: '4px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      },
+      safetyNotice: {
+        backgroundColor: '#fef3c7',
+        borderLeft: '4px solid #f59e0b',
+        padding: '20px',
+        margin: '15px 0',
+        borderRadius: '4px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      },
+      nutritionTip: {
+        backgroundColor: '#dcfce7',
+        borderLeft: '4px solid #22c55e',
+        padding: '20px',
+        margin: '15px 0',
+        borderRadius: '4px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      },
+      memoryAid: {
+        backgroundColor: '#e0f2fe',
+        borderLeft: '4px solid #3b82f6',
+        padding: '20px',
+        margin: '15px 0',
+        borderRadius: '4px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      },
+      infoBox: {
+        backgroundColor: '#f3e8ff',
+        borderLeft: '4px solid #8b5cf6',
+        padding: '20px',
+        margin: '15px 0',
+        borderRadius: '4px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      },
+      takeawayHeading: {
+        display: 'flex',
+        alignItems: 'center',
+        fontWeight: '600',
+        fontSize: '18px',
+        marginBottom: '10px',
+        color: '#333'
+      },
+      takeawayContent: {
+        lineHeight: '1.6',
+        fontSize: '16px',
+        color: '#444'
+      },
+      iconWrapper: {
+        display: 'inline-flex',
+        marginRight: '10px'
+      },
+      iconBook: {
+        width: '20px',
+        height: '20px',
+        color: '#0ea5e9'
+      },
+      iconAlert: {
+        width: '20px',
+        height: '20px',
+        color: '#f59e0b'
+      },
+      iconBulb: {
+        width: '20px',
+        height: '20px',
+        color: '#22c55e'
+      },
+      iconBrain: {
+        width: '20px',
+        height: '20px',
+        color: '#3b82f6'
+      },
+      iconInfo: {
+        width: '20px',
+        height: '20px',
+        color: '#8b5cf6'
       }
     };
   }
@@ -570,6 +689,105 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     }
   }
 
+  function generateTakeawayHTML() {
+    const styles = getInlineStyles();
+    
+    const getTakeawayItems = () => {
+      if (bulkMode) {
+        return bulkTakeawayData.trim().split('\n\n').map(block => {
+          const lines = block.trim().split('\n');
+          const title = lines[0].trim();
+          const content = lines.slice(1).join('\n').trim();
+          
+          let type = "info";
+          
+          if (title.toLowerCase().includes("research")) {
+            type = "research";
+          } else if (title.toLowerCase().includes("safety")) {
+            type = "safety";
+          } else if (title.toLowerCase().includes("tip")) {
+            type = "tip";
+          } else if (title.toLowerCase().includes("memory")) {
+            type = "memory";
+          }
+          
+          return { title, content, type };
+        }).filter(item => item.title && item.content);
+      } else {
+        return takeaways;
+      }
+    };
+    
+    const takeawayItems = getTakeawayItems();
+    
+    const generateTakeawayIcon = (type: string) => {
+      let iconSvg = '';
+      let iconStyle = '';
+      
+      switch(type) {
+        case 'research':
+          iconStyle = objectToInlineStyle(styles.iconBook);
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>';
+          break;
+        case 'safety':
+          iconStyle = objectToInlineStyle(styles.iconAlert);
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+          break;
+        case 'tip':
+          iconStyle = objectToInlineStyle(styles.iconBulb);
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>';
+          break;
+        case 'memory':
+          iconStyle = objectToInlineStyle(styles.iconBrain);
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.91.05L12 20V4.5Z"></path><path d="M16 8V4"></path><path d="M18 6h-4"></path><path d="M15 12h-3"></path><path d="M16 16h-4"></path><path d="M19 10a2 2 0 0 1 0 4"></path></svg>';
+          break;
+        default:
+          iconStyle = objectToInlineStyle(styles.iconInfo);
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+      }
+      
+      return `<span style="${objectToInlineStyle(styles.iconWrapper)}">${iconSvg}</span>`;
+    };
+    
+    const htmlContent = `
+    <div style="${objectToInlineStyle(styles.takeawayContainer)}">
+      ${takeawayItems.map(takeaway => {
+        let boxStyle;
+        
+        switch(takeaway.type) {
+          case 'research':
+            boxStyle = styles.researchNote;
+            break;
+          case 'safety':
+            boxStyle = styles.safetyNotice;
+            break;
+          case 'tip':
+            boxStyle = styles.nutritionTip;
+            break;
+          case 'memory':
+            boxStyle = styles.memoryAid;
+            break;
+          default:
+            boxStyle = styles.infoBox;
+        }
+        
+        return `
+          <div style="${objectToInlineStyle(boxStyle)}">
+            <h4 style="${objectToInlineStyle(styles.takeawayHeading)}">
+              ${generateTakeawayIcon(takeaway.type)}
+              ${takeaway.title}
+            </h4>
+            <div style="${objectToInlineStyle(styles.takeawayContent)}">
+              ${takeaway.content}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>`;
+    
+    return htmlContent;
+  }
+
   function generateHTML() {
     let htmlContent = '';
     
@@ -590,6 +808,9 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         } else {
           htmlContent = generateFaqHTML();
         }
+        break;
+      case 'takeaway':
+        htmlContent = generateTakeawayHTML();
         break;
       case 'schema':
         htmlContent = generateSchemaHTML();
@@ -689,7 +910,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
           HTML Component Generator
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Create beautifully styled HTML components for product displays, pros & cons lists, FAQ accordions, and Schema markup.
+          Create beautifully styled HTML components for product displays, pros & cons lists, FAQ accordions, takeaways, and Schema markup.
         </p>
       </div>
       
@@ -713,6 +934,12 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
               onClick={() => setActiveTab('faq')}
             >
               FAQ Accordion
+            </TabButton>
+            <TabButton
+              active={activeTab === 'takeaway'}
+              onClick={() => setActiveTab('takeaway')}
+            >
+              Takeaways
             </TabButton>
             <TabButton
               active={activeTab === 'schema'}
@@ -814,6 +1041,17 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
                 setFaqs={setFaqs}
                 bulkFaqData={bulkFaqData}
                 setBulkFaqData={setBulkFaqData}
+              />
+            )}
+            
+            {activeTab === 'takeaway' && (
+              <TakeawayTab
+                bulkMode={bulkMode}
+                setBulkMode={setBulkMode}
+                takeaways={takeaways}
+                setTakeaways={setTakeaways}
+                bulkTakeawayData={bulkTakeawayData}
+                setBulkTakeawayData={setBulkTakeawayData}
               />
             )}
             
