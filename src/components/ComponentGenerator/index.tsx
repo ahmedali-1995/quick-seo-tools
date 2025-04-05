@@ -1,1210 +1,461 @@
 import React, { useState } from 'react';
-import TabButton from '../UI/TabButton';
-import { Checkbox } from '../ui/checkbox';
-import { Label } from '../ui/label';
-import CodePreview from '../UI/CodePreview';
-import ProductTab from './ProductTab';
-import ProsConsTab from './ProsConsTab';
-import FaqTab from './FaqTab';
-import SchemaTab from './SchemaTab';
-import TakeawayTab from './TakeawayTab';
-import TableTab from './TableTab';
-import { SchemaResult } from '@/utils/schemaUtils';
-import { toast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { CopyIcon } from '@radix-ui/react-icons';
+import { toast } from 'sonner';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { cn } from '@/lib/utils';
+import ProductTab from './ProductTab';
+import TableTab from './TableTab';
 
-interface ExtendedSchemaResult extends SchemaResult {
-  offers?: {
-    "@type": string;
-    price: string;
-    priceCurrency: string;
-    availability: string;
-    url: string;
-  };
-  additionalProperty?: Array<{
-    "@type": string;
-    name: string;
-    value: string;
-  }>;
-}
-
-const ComponentGenerator: React.FC = () => {
+const ComponentGenerator = () => {
   const [activeTab, setActiveTab] = useState('product');
-  const [sharedStyles, setSharedStyles] = useState(true);
-  const [bulkMode, setBulkMode] = useState(false);
-  const [generatedHTML, setGeneratedHTML] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const [schemaUrl, setSchemaUrl] = useState('');
-  const [schemaData, setSchemaData] = useState<ExtendedSchemaResult | null>(null);
-  
+  const [htmlOutput, setHtmlOutput] = useState('');
+  const [reactOutput, setReactOutput] = useState('');
+  const [showPreview, setShowPreview] = useState(true);
+  const [showCode, setShowCode] = useState(false);
+  const [showReactCode, setShowReactCode] = useState(false);
+
+  // Product tab state
   const [productTitle, setProductTitle] = useState('BEST MEN\'S MULTIVITAMIN FOR IMMUNE SUPPORT');
   const [productName, setProductName] = useState('Theralogix Solo Vitamin & Mineral Supplement');
   const [imageUrl, setImageUrl] = useState('/api/placeholder/150/300');
   const [shopButtonText, setShopButtonText] = useState('SHOP AT AMAZON');
   const [shopUrl, setShopUrl] = useState('https://www.amazon.com');
-  const [pros, setPros] = useState([
-    'Price per dose is on the more affordable end',
-    'Just one pill daily',
-    'Contains 100% of the daily recommended value for more than 20 vitamins and minerals'
-  ]);
-  const [cons, setCons] = useState([
-    'May not be suitable for vegans'
-  ]);
+  const [pros, setPros] = useState(['Strong immune support', 'Science-backed ingredients']);
+  const [cons, setCons] = useState(['Premium price', 'Only available online']);
   const [specs, setSpecs] = useState([
-    { label: 'Type', value: 'Tablet' },
-    { label: 'Dosage', value: '1 tablet' },
-    { label: 'Price per dose', value: '$0.80' },
-    { label: 'Age range', value: '18+' },
-    { label: 'Certification', value: 'NSF' }
+    { label: 'Servings', value: '30 tablets' },
+    { label: 'Dosage', value: '1 tablet daily' }
   ]);
 
-  const [prosConsTitle, setProsConsTitle] = useState('Pros and Cons');
-  const [prosOnly, setProsOnly] = useState([
-    'Easy to use interface',
-    'Comprehensive documentation',
-    'Regular updates with new features'
+  // Table tab state
+  const [bulkMode, setBulkMode] = useState(false);
+  const [tableData, setTableData] = useState([
+    ['Data 1', 'Data 2', 'Data 3'],
+    ['Data 4', 'Data 5', 'Data 6'],
+    ['Data 7', 'Data 8', 'Data 9'],
   ]);
-  const [consOnly, setConsOnly] = useState([
-    'Limited free plan options',
-    'Requires internet connection'
-  ]);
-  
-  const [bulkProsConsData, setBulkProsConsData] = useState(
-`Product A
-pros: Easy to use, Affordable, Long battery life
-cons: Heavier than competitors, Limited color options
-
-Product B
-pros: Lightweight design, Premium build quality, Fast charging
-cons: Expensive, Short warranty period`);
-
-  const [faqs, setFaqs] = useState([
-    { 
-      question: 'How do I install this product?', 
-      answer: 'Installation is simple. Just unpack the box, connect the power cable, and follow the on-screen instructions.' 
-    },
-    { 
-      question: 'What is the warranty period?', 
-      answer: 'All our products come with a standard 2-year warranty that covers manufacturing defects.' 
-    }
-  ]);
-  
-  const [bulkFaqData, setBulkFaqData] = useState(
-`Q: How do I install this product?
-A: Installation is simple. Just unpack the box, connect the power cable, and follow the on-screen instructions.
-
-Q: What is the warranty period?
-A: All our products come with a standard 2-year warranty that covers manufacturing defects.`);
-
-  const [takeaways, setTakeaways] = useState([
-    { 
-      title: 'Research Note', 
-      content: "The Women's Health Study found that women over 45 who took 600 IU of Vitamin E every other day had a 24% reduction in cardiovascular death risk, though overall heart disease rates were unchanged.", 
-      type: 'research',
-      icon: 'BookOpen'
-    },
-    { 
-      title: 'Important Safety Notice', 
-      content: "High-dose Vitamin E supplements (400 IU/day or more) should not be taken without medical supervision, especially if you take blood thinners, aspirin, or are scheduled for surgery.", 
-      type: 'safety',
-      icon: 'AlertTriangle'
-    },
-    { 
-      title: 'Nutrition Tip', 
-      content: "Since Vitamin E is fat-soluble, consuming it with some healthy fat improves absorption. Add olive oil to your spinach salad or eat nuts with your fruits to maximize nutrient uptake.", 
-      type: 'tip',
-      icon: 'Lightbulb'
-    }
-  ]);
-  
-  const [bulkTakeawayData, setBulkTakeawayData] = useState(
-`Research Note
-The Women's Health Study found that women over 45 who took 600 IU of Vitamin E every other day had a 24% reduction in cardiovascular death risk, though overall heart disease rates were unchanged.
-
-Important Safety Notice
-High-dose Vitamin E supplements (400 IU/day or more) should not be taken without medical supervision, especially if you take blood thinners, aspirin, or are scheduled for surgery.
-
-Nutrition Tip
-Since Vitamin E is fat-soluble, consuming it with some healthy fat improves absorption. Add olive oil to your spinach salad or eat nuts with your fruits to maximize nutrient uptake.`);
-
-  const [tableData, setTableData] = useState<string[][]>([['Data 1', 'Data 2'], ['Data 3', 'Data 4']]);
-  const [tableHeaders, setTableHeaders] = useState<string[]>(['Header 1', 'Header 2']);
+  const [tableHeaders, setTableHeaders] = useState(['Header 1', 'Header 2', 'Header 3']);
   const [hasHeader, setHasHeader] = useState(true);
   const [hasAlternatingRows, setHasAlternatingRows] = useState(true);
   const [isResponsive, setIsResponsive] = useState(true);
-  const [tableCaption, setTableCaption] = useState('Example Table Caption');
+  const [tableCaption, setTableCaption] = useState('Table Caption');
   const [tableStyle, setTableStyle] = useState<'basic' | 'striped' | 'bordered' | 'minimal'>('basic');
   const [headerColor, setHeaderColor] = useState('');
   const [borderRadius, setBorderRadius] = useState('');
 
+  function styleObjectToCss(styleObj: Record<string, string | number>) {
+    return Object.entries(styleObj)
+      .map(([key, value]) => {
+        // Convert camelCase to kebab-case
+        const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+        return `${kebabKey}: ${value}`;
+      })
+      .join('; ');
+  }
+
   function getInlineStyles() {
-    return {
-      container: {
-        maxWidth: '600px',
+    if (activeTab === 'table') {
+      const tableStyles = {
+        table: {
+          width: '100%',
+          borderCollapse: 'collapse',
+          marginBottom: '1rem',
+          borderRadius: borderRadius || undefined,
+          overflow: 'hidden',
+        },
+        caption: {
+          captionSide: 'bottom',
+          marginTop: '0.5rem',
+          fontSize: '0.875rem',
+          color: '#6b7280',
+        },
+        th: {
+          padding: '0.75rem',
+          textAlign: 'left',
+          fontWeight: 'bold',
+          backgroundColor: headerColor || '#f3f4f6',
+          color: headerColor ? '#ffffff' : '#374151',
+          borderBottom: tableStyle === 'bordered' ? '1px solid #d1d5db' : '2px solid #d1d5db',
+        },
+        td: {
+          padding: '0.75rem',
+          borderBottom: tableStyle === 'bordered' ? '1px solid #d1d5db' : '1px solid #e5e7eb',
+          borderRight: tableStyle === 'bordered' ? '1px solid #d1d5db' : 'none',
+        },
+        tr: {
+          backgroundColor: 'white',
+        },
+        trAlt: {
+          backgroundColor: '#f9fafb',
+        },
+        responsiveWrapper: {
+          overflowX: 'auto',
+        },
+      };
+
+      return tableStyles;
+    }
+
+    return {};
+  }
+
+  function renderProductDisplay() {
+    const productStyles = {
+      card: {
+        border: '1px solid #e5e7eb',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        maxWidth: '800px',
         margin: '0 auto',
-        border: '1px solid #5a2c82',
-        padding: '20px',
-        fontFamily: 'Arial, sans-serif'
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       },
-      productHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '20px'
+      header: {
+        backgroundColor: '#f9fafb',
+        padding: '12px 16px',
+        borderBottom: '1px solid #e5e7eb',
+        textAlign: 'center' as const
       },
-      productImage: {
-        width: '150px',
-        marginRight: '20px'
-      },
-      productTitle: {
-        flex: '1'
-      },
-      productTitleH3: {
-        color: '#5a2c82',
-        textAlign: 'center',
-        fontSize: '14px',
-        marginBottom: '10px'
-      },
-      productTitleH2: {
-        textAlign: 'center',
-        fontSize: '18px',
-        marginTop: '0',
-        color: '#333'
-      },
-      shopButton: {
-        backgroundColor: '#5a2c82',
-        color: 'white',
-        border: 'none',
-        padding: '8px 16px',
-        borderRadius: '4px',
+      title: {
         fontWeight: 'bold',
-        display: 'block',
-        width: '150px',
-        textAlign: 'center',
-        margin: '10px auto',
-        textDecoration: 'none'
+        fontSize: '14px',
+        color: '#6b7280',
+        letterSpacing: '0.05em',
+        margin: '0'
       },
-      prosCons: {
+      content: {
         display: 'flex',
-        marginBottom: '20px'
+        flexDirection: 'column' as const,
+        padding: '16px'
       },
-      pros: {
-        flex: '1'
+      imageContainer: {
+        display: 'flex',
+        justifyContent: 'center' as const,
+        marginBottom: '16px'
       },
-      cons: {
-        flex: '1'
+      image: {
+        maxWidth: '200px',
+        maxHeight: '300px',
+        objectFit: 'contain' as const
       },
-      prosConsStandalone: {
-        border: '1px solid #dfdfdf',
-        padding: '20px',
-        marginBottom: '20px'
+      productName: {
+        fontSize: '20px',
+        fontWeight: 'bold',
+        marginBottom: '16px',
+        textAlign: 'center' as const
       },
-      prosConsStandaloneH3: {
-        color: '#5a2c82',
-        textAlign: 'center',
-        marginTop: '0',
-        marginBottom: '20px'
+      section: {
+        marginBottom: '16px'
       },
-      h4: {
-        color: '#5a2c82',
-        borderBottom: '1px solid #5a2c82',
-        paddingBottom: '5px'
+      sectionTitle: {
+        fontSize: '16px',
+        fontWeight: 'bold',
+        marginBottom: '8px',
+        borderBottom: '1px solid #e5e7eb',
+        paddingBottom: '4px'
       },
-      prosList: {
-        listStyleType: 'none',
-        paddingLeft: '0'
+      list: {
+        margin: '0',
+        padding: '0 0 0 24px'
       },
-      consList: {
-        listStyleType: 'none',
-        paddingLeft: '0'
-      },
-      prosItem: {
-        position: 'relative',
-        paddingLeft: '25px',
-        marginBottom: '10px'
-      },
-      consItem: {
-        position: 'relative',
-        paddingLeft: '25px',
-        marginBottom: '10px'
+      listItem: {
+        margin: '4px 0'
       },
       table: {
         width: '100%',
-        borderCollapse: 'collapse'
+        borderCollapse: 'collapse' as const
       },
-      tableTd: {
-        border: '1px solid #dfdfdf',
-        padding: '10px'
+      tableRow: {
+        borderBottom: '1px solid #f3f4f6'
       },
-      tableFirstTd: {
+      tableCell: {
+        padding: '8px',
+        fontSize: '14px'
+      },
+      buttonContainer: {
+        display: 'flex',
+        justifyContent: 'center' as const,
+        marginTop: '16px'
+      },
+      button: {
+        backgroundColor: '#2563eb',
+        color: 'white',
+        padding: '10px 16px',
         fontWeight: 'bold',
-        width: '150px',
-        backgroundColor: '#f9f6fc',
-        color: '#5a2c82'
-      },
-      faqContainer: {
-        border: '1px solid #e2e2e2',
-        borderRadius: '12px',
-        padding: '28px',
-        marginBottom: '30px',
-        boxShadow: '0 8px 24px rgba(90, 44, 130, 0.1)',
-        backgroundColor: '#ffffff',
-        maxWidth: '900px',
-        margin: '0 auto'
-      },
-      faqContainerH3: {
-        color: '#5a2c82',
-        textAlign: 'center',
-        marginTop: '0',
-        marginBottom: '32px',
-        fontSize: '28px',
-        fontWeight: '700',
-        letterSpacing: '-0.5px',
-        borderBottom: '2px solid #efe5fa',
-        paddingBottom: '16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '12px'
-      },
-      faqIcon: {
-        width: '24px',
-        height: '24px',
-        fill: '#5a2c82'
-      },
-      faqItem: {
-        marginBottom: '24px',
-        border: '1px solid #e9e1f3',
-        borderRadius: '10px',
-        overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(90, 44, 130, 0.06)',
-        backgroundColor: '#ffffff',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        borderLeft: '4px solid #5a2c82'
-      },
-      faqQuestion: {
-        backgroundColor: '#f9f6fc',
-        padding: '20px 24px',
-        fontWeight: '600',
-        color: '#5a2c82',
-        borderBottom: '1px solid #efe5fa',
-        fontSize: '18px',
-        lineHeight: '1.5',
-        letterSpacing: '-0.2px',
-        position: 'relative'
-      },
-      faqAnswer: {
-        padding: '24px',
-        lineHeight: '1.7',
-        color: '#444',
-        backgroundColor: '#ffffff',
-        fontSize: '16px'
-      },
-      takeawayContainer: {
-        padding: '0',
-        margin: '20px 0',
-        maxWidth: '900px'
-      },
-      researchNote: {
-        backgroundColor: '#e0f2fe',
-        borderLeft: '4px solid #0ea5e9',
-        padding: '20px',
-        margin: '15px 0',
         borderRadius: '4px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        textDecoration: 'none',
+        textAlign: 'center' as const
       },
-      safetyNotice: {
-        backgroundColor: '#fef3c7',
-        borderLeft: '4px solid #f59e0b',
-        padding: '20px',
-        margin: '15px 0',
-        borderRadius: '4px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      prosIcon: {
+        color: '#16a34a',
+        marginRight: '6px'
       },
-      nutritionTip: {
-        backgroundColor: '#dcfce7',
-        borderLeft: '4px solid #22c55e',
-        padding: '20px',
-        margin: '15px 0',
-        borderRadius: '4px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      },
-      memoryAid: {
-        backgroundColor: '#e0f2fe',
-        borderLeft: '4px solid #3b82f6',
-        padding: '20px',
-        margin: '15px 0',
-        borderRadius: '4px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      },
-      infoBox: {
-        backgroundColor: '#f3e8ff',
-        borderLeft: '4px solid #8b5cf6',
-        padding: '20px',
-        margin: '15px 0',
-        borderRadius: '4px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      },
-      takeawayHeading: {
-        display: 'flex',
-        alignItems: 'center',
-        fontWeight: '600',
-        fontSize: '18px',
-        marginBottom: '10px',
-        color: '#333'
-      },
-      takeawayContent: {
-        lineHeight: '1.6',
-        fontSize: '16px',
-        color: '#444'
-      },
-      iconWrapper: {
-        display: 'inline-flex',
-        marginRight: '10px'
-      },
-      iconBook: {
-        width: '20px',
-        height: '20px',
-        color: '#0ea5e9'
-      },
-      iconAlert: {
-        width: '20px',
-        height: '20px',
-        color: '#f59e0b'
-      },
-      iconBulb: {
-        width: '20px',
-        height: '20px',
-        color: '#22c55e'
-      },
-      iconBrain: {
-        width: '20px',
-        height: '20px',
-        color: '#3b82f6'
-      },
-      iconInfo: {
-        width: '20px',
-        height: '20px',
-        color: '#8b5cf6'
+      consIcon: {
+        color: '#dc2626',
+        marginRight: '6px'
       }
     };
-  }
 
-  function getFaqToggleScript() {
-    return `
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const questions = document.querySelectorAll('.faq-question');
-        questions.forEach(question => {
-          const answer = question.nextElementSibling;
-          answer.style.display = 'block';
-          
-          question.addEventListener('click', function() {
-            const answer = this.nextElementSibling;
-            answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
-          });
-        });
-      });
-    </script>`;
-  }
-
-  function generateProductHTML() {
-    const styles = getInlineStyles();
-    const scriptTag = sharedStyles ? getFaqToggleScript() : '';
+    const htmlContent = `<div style="${styleObjectToCss(productStyles.card)}">
+  <div style="${styleObjectToCss(productStyles.header)}">
+    <p style="${styleObjectToCss(productStyles.title)}">${productTitle}</p>
+  </div>
+  <div style="${styleObjectToCss(productStyles.content)}">
+    <div style="${styleObjectToCss(productStyles.imageContainer)}">
+      <img 
+        src="${imageUrl}" 
+        alt="${productName}" 
+        style="${styleObjectToCss(productStyles.image)}"
+      />
+    </div>
+    <h2 style="${styleObjectToCss(productStyles.productName)}">${productName}</h2>
     
-    const htmlContent = `
-    <div style="${objectToInlineStyle(styles.container)}">
-      <div style="${objectToInlineStyle(styles.productHeader)}">
-        <img style="${objectToInlineStyle(styles.productImage)}" src="${imageUrl}" alt="Product Image">
-        <div style="${objectToInlineStyle(styles.productTitle)}">
-          <h3 style="${objectToInlineStyle(styles.productTitleH3)}">${productTitle}</h3>
-          <h2 style="${objectToInlineStyle(styles.productTitleH2)}">${productName}</h2>
-          <a href="${shopUrl}" style="${objectToInlineStyle(styles.shopButton)}">${shopButtonText}</a>
-        </div>
-      </div>
-      
-      <div style="${objectToInlineStyle(styles.prosCons)}">
-        <div style="${objectToInlineStyle(styles.pros)}">
-          <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
-          <ul style="${objectToInlineStyle(styles.prosList)}">
-            ${pros.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
-          </ul>
-        </div>
-        <div style="${objectToInlineStyle(styles.cons)}">
-          <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
-          <ul style="${objectToInlineStyle(styles.consList)}">
-            ${cons.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
-          </ul>
-        </div>
-      </div>
-      
-      <table style="${objectToInlineStyle(styles.table)}">
-        ${specs.map(spec => 
-          `<tr>
-            <td style="${objectToInlineStyle({...styles.tableTd, ...styles.tableFirstTd})}">${spec.label}</td>
-            <td style="${objectToInlineStyle(styles.tableTd)}">${spec.value}</td>
-          </tr>`
-        ).join('')}
+    <div style="${styleObjectToCss(productStyles.section)}">
+      <h3 style="${styleObjectToCss(productStyles.sectionTitle)}">Pros</h3>
+      <ul style="${styleObjectToCss(productStyles.list)}">
+        ${pros.map(pro => `
+          <li style="${styleObjectToCss(productStyles.listItem)}">
+            <span style="${styleObjectToCss(productStyles.prosIcon)}">✓</span> ${pro}
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+    
+    <div style="${styleObjectToCss(productStyles.section)}">
+      <h3 style="${styleObjectToCss(productStyles.sectionTitle)}">Cons</h3>
+      <ul style="${styleObjectToCss(productStyles.list)}">
+        ${cons.map(con => `
+          <li style="${styleObjectToCss(productStyles.listItem)}">
+            <span style="${styleObjectToCss(productStyles.consIcon)}">✗</span> ${con}
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+    
+    ${specs.length > 0 ? `
+    <div style="${styleObjectToCss(productStyles.section)}">
+      <h3 style="${styleObjectToCss(productStyles.sectionTitle)}">Specifications</h3>
+      <table style="${styleObjectToCss(productStyles.table)}">
+        <tbody>
+          ${specs.map(spec => `
+            <tr style="${styleObjectToCss(productStyles.tableRow)}">
+              <td style="${styleObjectToCss({...productStyles.tableCell, fontWeight: 'bold', width: '40%'})}">${spec.label}</td>
+              <td style="${styleObjectToCss(productStyles.tableCell)}">${spec.value}</td>
+            </tr>
+          `).join('')}
+        </tbody>
       </table>
-    </div>`;
-
-    return sharedStyles ? scriptTag + htmlContent : htmlContent;
-  }
-
-  function objectToInlineStyle(styleObj) {
-    return Object.entries(styleObj)
-      .map(([key, value]) => {
-        const kebabKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        return `${kebabKey}:${value}`;
-      })
-      .join(';');
-  }
-
-  function generateProsConsHTML() {
-    const styles = getInlineStyles();
+    </div>
+    ` : ''}
     
-    if (bulkMode) {
-      const products = bulkProsConsData.trim().split('\n\n');
-      let htmlContent = '';
-      
-      products.forEach(product => {
-        const lines = product.trim().split('\n');
-        const productName = lines[0].trim();
-        
-        let prosItems = [];
-        let consItems = [];
-        
-        lines.slice(1).forEach(line => {
-          if (line.startsWith('pros:')) {
-            prosItems = line.replace('pros:', '').split(',').map(item => item.trim());
-          } else if (line.startsWith('cons:')) {
-            consItems = line.replace('cons:', '').split(',').map(item => item.trim());
-          }
-        });
-        
-        htmlContent += `
-        <div style="${objectToInlineStyle(styles.prosConsStandalone)}">
-          <h3 style="${objectToInlineStyle(styles.prosConsStandaloneH3)}">${productName}</h3>
-          <div style="${objectToInlineStyle(styles.prosCons)}">
-            <div style="${objectToInlineStyle(styles.pros)}">
-              <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
-              <ul style="${objectToInlineStyle(styles.prosList)}">
-                ${prosItems.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
-              </ul>
-            </div>
-            <div style="${objectToInlineStyle(styles.cons)}">
-              <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
-              <ul style="${objectToInlineStyle(styles.consList)}">
-                ${consItems.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
-              </ul>
-            </div>
-          </div>
-        </div>`;
-      });
-      
-      return htmlContent;
-    } else {
-      const htmlContent = `
-      <div style="${objectToInlineStyle(styles.prosConsStandalone)}">
-        <h3 style="${objectToInlineStyle(styles.prosConsStandaloneH3)}">${prosConsTitle}</h3>
-        <div style="${objectToInlineStyle(styles.prosCons)}">
-          <div style="${objectToInlineStyle(styles.pros)}">
-            <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
-            <ul style="${objectToInlineStyle(styles.prosList)}">
-              ${prosOnly.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
-            </ul>
-          </div>
-          <div style="${objectToInlineStyle(styles.cons)}">
-            <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
-            <ul style="${objectToInlineStyle(styles.consList)}">
-              ${consOnly.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
-      </div>`;
-      
-      return htmlContent;
-    }
-  }
+    <div style="${styleObjectToCss(productStyles.buttonContainer)}">
+      <a 
+        href="${shopUrl}" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        style="${styleObjectToCss(productStyles.button)}"
+      >
+        ${shopButtonText}
+      </a>
+    </div>
+  </div>
+</div>`;
 
-  function generateFaqHTML() {
-    const styles = getInlineStyles();
-    
-    if (bulkMode) {
-      const faqPairs = bulkFaqData.trim().split('\n\n');
-      let faqItems = [];
-      
-      faqPairs.forEach(pair => {
-        const lines = pair.trim().split('\n');
-        if (lines.length >= 2) {
-          const question = lines[0].replace(/^Q:\s*/i, '').trim();
-          const answer = lines[1].replace(/^A:\s*/i, '').trim();
-          faqItems.push({ question, answer });
-        }
-      });
-      
-      const htmlContent = `
-      <div style="${objectToInlineStyle(styles.faqContainer)}">
-        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">
-          <svg style="${objectToInlineStyle(styles.faqIcon)}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z" />
-          </svg>
-          Frequently Asked Questions
-        </h3>
-        ${faqItems.map((faq, index) => `
-          <div style="${objectToInlineStyle(styles.faqItem)}">
-            <div style="${objectToInlineStyle(styles.faqQuestion)}">
-              ${faq.question}
-            </div>
-            <div style="${objectToInlineStyle(styles.faqAnswer)}">
-              ${faq.answer}
-            </div>
-          </div>
-        `).join('')}
-      </div>`;
-      
-      return htmlContent;
-    } else {
-      const htmlContent = `
-      <div style="${objectToInlineStyle(styles.faqContainer)}">
-        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">
-          <svg style="${objectToInlineStyle(styles.faqIcon)}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z" />
-          </svg>
-          Frequently Asked Questions
-        </h3>
-        ${faqs.map((faq, index) => `
-          <div style="${objectToInlineStyle(styles.faqItem)}">
-            <div style="${objectToInlineStyle(styles.faqQuestion)}">
-              ${faq.question}
-            </div>
-            <div style="${objectToInlineStyle(styles.faqAnswer)}">
-              ${faq.answer}
-            </div>
-          </div>
-        `).join('')}
-      </div>`;
-      
-      return htmlContent;
-    }
-  }
-
-  function generateSchemaHTML() {
-    if (!schemaData) return '';
-    
-    const htmlContent = `
-    <script type="application/ld+json">
-      ${JSON.stringify(schemaData, null, 2)}
-    </script>`;
-    
     return htmlContent;
   }
 
-  function generateProductWithSchemaHTML() {
-    if (!schemaData) {
-      toast({
-        title: "Schema Required",
-        description: "Please generate a schema first",
-        variant: "destructive"
-      });
-      return '';
-    }
-    
-    const productSchema: ExtendedSchemaResult = {
-      ...schemaData,
-      name: productName,
-      description: productTitle,
-      image: imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
-    };
-    
-    if (productSchema['@type'] === 'Product') {
-      const priceSpec = specs.find(spec => 
-        spec.label.toLowerCase().includes('price') && 
-        spec.value.includes('$')
-      );
-      
-      if (priceSpec) {
-        const priceMatch = priceSpec.value.match(/\$([0-9]+(\.[0-9]+)?)/);
-        if (priceMatch && priceMatch[1]) {
-          productSchema.offers = productSchema.offers || {
-            "@type": "Offer",
-            "price": priceMatch[1],
-            "priceCurrency": "USD",
-            "availability": "https://schema.org/InStock",
-            "url": shopUrl
-          };
-        }
-      }
-    }
-    
-    if (productSchema['@type'] === 'Product' && specs.length > 0) {
-      productSchema.additionalProperty = productSchema.additionalProperty || [];
-      
-      specs.forEach(spec => {
-        const existingPropIndex = productSchema.additionalProperty?.findIndex(prop => prop.name === spec.label);
-        
-        if (existingPropIndex === -1 || existingPropIndex === undefined) {
-          productSchema.additionalProperty?.push({
-            "@type": "PropertyValue",
-            "name": spec.label,
-            "value": spec.value
-          });
-        }
-      });
-    }
-    
-    const schemaScript = `
-    <script type="application/ld+json">
-      ${JSON.stringify(productSchema, null, 2)}
-    </script>`;
-    
-    return generateProductHTML() + schemaScript;
-  }
-
-  function generateFaqWithSchemaHTML() {
-    if (!schemaData || schemaData['@type'] !== 'FAQPage') {
-      const faqItems = bulkMode 
-        ? bulkFaqData.trim().split('\n\n').map(pair => {
-            const lines = pair.trim().split('\n');
-            if (lines.length >= 2) {
-              return {
-                question: lines[0].replace(/^Q:\s*/i, '').trim(),
-                answer: lines[1].replace(/^A:\s*/i, '').trim()
-              };
-            }
-            return null;
-          }).filter(Boolean)
-        : faqs;
-      
-      const newSchema = {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": faqItems.map(faq => ({
-          "@type": "Question",
-          "name": faq.question,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": faq.answer
-          }
-        }))
-      };
-      
-      setSchemaData(newSchema);
-      
-      toast({
-        title: "Schema Generated",
-        description: "FAQ schema has been generated from your FAQs"
-      });
-    } else {
-      return generateFaqHTML() + generateSchemaHTML();
-    }
-  }
-
-  function generateTakeawayHTML() {
+  function renderTableDisplay() {
     const styles = getInlineStyles();
     
-    const getTakeawayItems = () => {
-      if (bulkMode) {
-        return bulkTakeawayData.trim().split('\n\n').map(block => {
-          const lines = block.trim().split('\n');
-          const title = lines[0].trim();
-          const content = lines.slice(1).join('\n').trim();
-          
-          let type = "info";
-          
-          if (title.toLowerCase().includes("research")) {
-            type = "research";
-          } else if (title.toLowerCase().includes("safety")) {
-            type = "safety";
-          } else if (title.toLowerCase().includes("tip")) {
-            type = "tip";
-          } else if (title.toLowerCase().includes("memory")) {
-            type = "memory";
-          }
-          
-          return { title, content, type };
-        }).filter(item => item.title && item.content);
-      } else {
-        return takeaways;
-      }
-    };
-    
-    const takeawayItems = getTakeawayItems();
-    
-    const generateTakeawayIcon = (type: string) => {
-      let iconSvg = '';
-      let iconStyle = '';
-      
-      switch(type) {
-        case 'research':
-          iconStyle = objectToInlineStyle(styles.iconBook);
-          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>';
-          break;
-        case 'safety':
-          iconStyle = objectToInlineStyle(styles.iconAlert);
-          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
-          break;
-        case 'tip':
-          iconStyle = objectToInlineStyle(styles.iconBulb);
-          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>';
-          break;
-        case 'memory':
-          iconStyle = objectToInlineStyle(styles.iconBrain);
-          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0-1.32 4.24 3 3 0 0 0 .34 5.58 2.5 2.5 0 0 0 2.96 3.08 2.5 2.5 0 0 0 4.91.05L12 20V4.5Z"></path><path d="M16 8V4"></path><path d="M18 6h-4"></path><path d="M15 12h-3"></path><path d="M16 16h-4"></path><path d="M19 10a2 2 0 0 1 0 4"></path></svg>';
-          break;
-        default:
-          iconStyle = objectToInlineStyle(styles.iconInfo);
-          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-      }
-      
-      return `<span style="${objectToInlineStyle(styles.iconWrapper)}">${iconSvg}</span>`;
-    };
-    
-    const htmlContent = `
-    <div style="${objectToInlineStyle(styles.takeawayContainer)}">
-      ${takeawayItems.map(takeaway => {
-        let boxStyle;
-        
-        switch(takeaway.type) {
-          case 'research':
-            boxStyle = styles.researchNote;
-            break;
-          case 'safety':
-            boxStyle = styles.safetyNotice;
-            break;
-          case 'tip':
-            boxStyle = styles.nutritionTip;
-            break;
-          case 'memory':
-            boxStyle = styles.memoryAid;
-            break;
-          default:
-            boxStyle = styles.infoBox;
-        }
-        
-        return `
-          <div style="${objectToInlineStyle(boxStyle)}">
-            <h4 style="${objectToInlineStyle(styles.takeawayHeading)}">
-              ${generateTakeawayIcon(takeaway.type)}
-              ${takeaway.title}
-            </h4>
-            <div style="${objectToInlineStyle(styles.takeawayContent)}">
-              ${takeaway.content}
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>`;
-    
-    return htmlContent;
-  }
-
-  function generateTableHTML() {
-    const styles = getInlineStyles();
-    
-    let tableClasses = '';
-    let tableStyles = {};
-    let thStyles = {};
-    let tdStyles = {};
-    let captionStyles = {};
-    let responsiveWrapperStyles = {};
-    
-    switch (tableStyle) {
-      case 'basic':
-        tableStyles = {
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontFamily: 'Arial, sans-serif',
-          margin: '20px 0',
-          fontSize: '14px'
-        };
-        thStyles = {
-          padding: '12px',
-          textAlign: 'left',
-          backgroundColor: '#f8f9fa',
-          color: '#333',
-          fontWeight: 'bold',
-          borderBottom: '2px solid #5a2c82'
-        };
-        tdStyles = {
-          padding: '10px 12px',
-          borderBottom: '1px solid #e2e8f0',
-          color: '#333'
-        };
-        captionStyles = {
-          captionSide: 'top',
-          textAlign: 'left',
-          fontWeight: 'bold',
-          fontSize: '16px',
-          margin: '10px 0',
-          color: '#5a2c82'
-        };
-        break;
-        
-      case 'striped':
-        tableStyles = {
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontFamily: 'Arial, sans-serif',
-          margin: '20px 0',
-          fontSize: '14px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        };
-        thStyles = {
-          padding: '14px 12px',
-          textAlign: 'left',
-          backgroundColor: '#5a2c82',
-          color: 'white',
-          fontWeight: 'bold'
-        };
-        tdStyles = {
-          padding: '10px 12px',
-          borderBottom: '1px solid #e2e8f0',
-          color: '#333'
-        };
-        captionStyles = {
-          captionSide: 'top',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          fontSize: '16px',
-          margin: '10px 0',
-          color: '#5a2c82'
-        };
-        break;
-        
-      case 'bordered':
-        tableStyles = {
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontFamily: 'Arial, sans-serif',
-          margin: '20px 0',
-          fontSize: '14px',
-          border: '1px solid #cbd5e0'
-        };
-        thStyles = {
-          padding: '12px',
-          textAlign: 'left',
-          backgroundColor: '#f8f9fa',
-          color: '#333',
-          fontWeight: 'bold',
-          border: '1px solid #cbd5e0'
-        };
-        tdStyles = {
-          padding: '10px 12px',
-          border: '1px solid #cbd5e0',
-          color: '#333'
-        };
-        captionStyles = {
-          captionSide: 'top',
-          textAlign: 'left',
-          fontWeight: 'bold',
-          fontSize: '16px',
-          margin: '10px 0',
-          color: '#333'
-        };
-        break;
-        
-      case 'minimal':
-        tableStyles = {
-          width: '100%',
-          borderCollapse: 'collapse',
-          fontFamily: 'Arial, sans-serif',
-          margin: '20px 0',
-          fontSize: '14px'
-        };
-        thStyles = {
-          padding: '12px 5px',
-          textAlign: 'left',
-          borderBottom: '2px solid #333',
-          color: '#333',
-          fontWeight: 'bold'
-        };
-        tdStyles = {
-          padding: '10px 5px',
-          borderBottom: '1px solid #e2e8f0',
-          color: '#333'
-        };
-        captionStyles = {
-          captionSide: 'top',
-          textAlign: 'left',
-          fontSize: '16px',
-          margin: '10px 0',
-          color: '#666',
-          fontStyle: 'italic'
-        };
-        break;
-    }
-    
-    if (isResponsive) {
-      responsiveWrapperStyles = {
-        overflowX: 'auto',
-        width: '100%'
-      };
-    }
-    
-    const evenRowStyles = hasAlternatingRows 
-      ? { backgroundColor: '#f5f6fa' }
-      : {};
-    
-    const responsiveWrapperStart = isResponsive ? `<div style="${objectToInlineStyle(responsiveWrapperStyles)}">` : '';
-    const responsiveWrapperEnd = isResponsive ? '</div>' : '';
-    
-    const htmlContent = `
-    ${responsiveWrapperStart}
-    <table style="${objectToInlineStyle(tableStyles)}">
-      ${tableCaption ? `<caption style="${objectToInlineStyle(captionStyles)}">${tableCaption}</caption>` : ''}
-      ${hasHeader ? `
-      <thead>
-        <tr>
-          ${tableHeaders.map(header => 
-            `<th style="${objectToInlineStyle({...thStyles, ...(headerColor ? {backgroundColor: headerColor, color: '#ffffff'} : {})})}">
-              ${header}
-            </th>`
-          ).join('')}
-        </tr>
-      </thead>
-      ` : ''}
-      <tbody>
-        ${tableData.map((row, rowIndex) => `
-          <tr${hasAlternatingRows && rowIndex % 2 === 1 ? ` style="${objectToInlineStyle(evenRowStyles)}"` : ''}>
-            ${row.map(cell => 
-              `<td style="${objectToInlineStyle(tdStyles)}">${cell}</td>`
-            ).join('')}
+    const tableHtml = `
+      ${isResponsive ? `<div style="${styleObjectToCss(styles.responsiveWrapper)}">` : ''}
+      <table style="${styleObjectToCss(styles.table)}">
+        ${tableCaption ? `<caption style="${styleObjectToCss(styles.caption)}">${tableCaption}</caption>` : ''}
+        ${hasHeader ? `
+        <thead>
+          <tr>
+            ${tableHeaders.map(header => `<th style="${styleObjectToCss(styles.th)}">${header}</th>`).join('')}
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
-    ${responsiveWrapperEnd}`;
+        </thead>
+        ` : ''}
+        <tbody>
+          ${tableData.map((row, rowIndex) => `
+            <tr style="${styleObjectToCss(hasAlternatingRows && rowIndex % 2 === 1 ? styles.trAlt : styles.tr)}">
+              ${row.map(cell => `<td style="${styleObjectToCss(styles.td)}">${cell}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${isResponsive ? `</div>` : ''}
+    `;
     
-    if (borderRadius) {
-      tableStyles = {
-        ...tableStyles,
-        borderRadius: borderRadius
-      };
-    }
-    
-    return htmlContent;
+    return tableHtml;
   }
 
-  function generateHTML() {
-    let htmlContent = '';
-    
-    switch (activeTab) {
-      case 'product':
-        if (schemaData && schemaData['@type'] === 'Product') {
-          htmlContent = generateProductWithSchemaHTML();
-        } else {
-          htmlContent = generateProductHTML();
-        }
-        break;
-      case 'proscons':
-        htmlContent = generateProsConsHTML();
-        break;
-      case 'faq':
-        if (schemaData && schemaData['@type'] === 'FAQPage') {
-          htmlContent = generateFaqWithSchemaHTML();
-        } else {
-          htmlContent = generateFaqHTML();
-        }
-        break;
-      case 'takeaway':
-        htmlContent = generateTakeawayHTML();
-        break;
-      case 'table':
-        htmlContent = generateTableHTML();
-        break;
-      case 'schema':
-        htmlContent = generateSchemaHTML();
-        break;
-      default:
-        htmlContent = '';
+  function generateReactCode() {
+    if (activeTab === 'table') {
+      const tableCode = `import React from 'react';
+import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from '@/components/ui/table';
+
+const DataTable = () => {
+  return (
+    ${isResponsive ? '<div className="overflow-x-auto w-full">' : ''}
+      <Table${tableStyle === 'bordered' ? ' className="border"' : ''}${headerColor ? ` headerColor="${headerColor}"` : ''}${borderRadius ? ` borderRadius="${borderRadius}"` : ''}>
+        ${tableCaption ? `<TableCaption>${tableCaption}</TableCaption>` : ''}
+        ${hasHeader ? `
+        <TableHeader>
+          <TableRow>
+            ${tableHeaders.map(header => `<TableHead>${header}</TableHead>`).join('\n            ')}
+          </TableRow>
+        </TableHeader>` : ''}
+        <TableBody>
+          ${tableData.map((row, rowIndex) => `
+          <TableRow${hasAlternatingRows && rowIndex % 2 === 1 ? ' className="bg-muted/50"' : ''}>
+            ${row.map(cell => `<TableCell>${cell}</TableCell>`).join('\n            ')}
+          </TableRow>`).join('\n          ')}
+        </TableBody>
+      </Table>
+    ${isResponsive ? '</div>' : ''}
+  );
+};
+
+export default DataTable;`;
+      
+      return tableCode;
     }
-    
-    setGeneratedHTML(htmlContent);
+
+    if (activeTab === 'product') {
+      return `import React from 'react';
+
+const ProductDisplay = () => {
+  return (
+    <div className="border rounded-lg shadow-md max-w-2xl mx-auto overflow-hidden">
+      <div className="bg-gray-50 border-b px-4 py-3 text-center">
+        <p className="text-sm font-bold text-gray-500 tracking-wide">
+          ${productTitle}
+        </p>
+      </div>
+      
+      <div className="flex flex-col p-4">
+        <div className="flex justify-center mb-4">
+          <img 
+            src="${imageUrl}" 
+            alt="${productName}" 
+            className="max-w-[200px] max-h-[300px] object-contain"
+          />
+        </div>
+        
+        <h2 className="text-xl font-bold mb-4 text-center">
+          ${productName}
+        </h2>
+        
+        <div className="mb-4">
+          <h3 className="text-base font-bold mb-2 pb-1 border-b">Pros</h3>
+          <ul className="pl-6">
+            {${JSON.stringify(pros)}.map((pro, index) => (
+              <li key={\`pro-\${index}\`} className="flex items-start my-1">
+                <span className="text-green-600 mr-1.5">✓</span>
+                {pro}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div className="mb-4">
+          <h3 className="text-base font-bold mb-2 pb-1 border-b">Cons</h3>
+          <ul className="pl-6">
+            {${JSON.stringify(cons)}.map((con, index) => (
+              <li key={\`con-\${index}\`} className="flex items-start my-1">
+                <span className="text-red-600 mr-1.5">✗</span>
+                {con}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        {${specs.length > 0 ? 'true' : 'false'} && (
+          <div className="mb-4">
+            <h3 className="text-base font-bold mb-2 pb-1 border-b">Specifications</h3>
+            <table className="w-full border-collapse">
+              <tbody>
+                {${JSON.stringify(specs)}.map((spec, index) => (
+                  <tr key={\`spec-\${index}\`} className="border-b border-gray-100">
+                    <td className="py-2 px-3 font-semibold w-2/5">{spec.label}</td>
+                    <td className="py-2 px-3">{spec.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        <div className="flex justify-center mt-4">
+          <a
+            href="${shopUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded"
+          >
+            ${shopButtonText}
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductDisplay;`;
+    }
+
+    return '';
   }
 
-  function generateProductSchema() {
-    const newSchema: ExtendedSchemaResult = {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": productName,
-      "description": productTitle,
-      "image": imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl}`,
-    };
+  function handleGenerate() {
+    let html = '';
     
-    const priceSpec = specs.find(spec => 
-      spec.label.toLowerCase().includes('price') && 
-      spec.value.includes('$')
-    );
-    
-    if (priceSpec) {
-      const priceMatch = priceSpec.value.match(/\$([0-9]+(\.[0-9]+)?)/);
-      if (priceMatch && priceMatch[1]) {
-        newSchema.offers = {
-          "@type": "Offer",
-          "price": priceMatch[1],
-          "priceCurrency": "USD",
-          "availability": "https://schema.org/InStock",
-          "url": shopUrl
-        };
-      }
+    if (activeTab === 'product') {
+      html = renderProductDisplay();
+    } else if (activeTab === 'table') {
+      html = renderTableDisplay();
     }
     
-    if (specs.length > 0) {
-      newSchema.additionalProperty = specs.map(spec => ({
-        "@type": "PropertyValue",
-        "name": spec.label,
-        "value": spec.value
-      }));
-    }
-    
-    setSchemaData(newSchema);
-    
-    toast({
-      title: "Schema Generated",
-      description: "Product schema has been generated from your product data"
-    });
+    setHtmlOutput(html);
+    setReactOutput(generateReactCode());
+    setShowPreview(true);
   }
 
-  function generateFaqSchema() {
-    const faqItems = bulkMode 
-      ? bulkFaqData.trim().split('\n\n').map(pair => {
-          const lines = pair.trim().split('\n');
-          if (lines.length >= 2) {
-            return {
-              question: lines[0].replace(/^Q:\s*/i, '').trim(),
-              answer: lines[1].replace(/^A:\s*/i, '').trim()
-            };
-          }
-          return null;
-        }).filter(Boolean)
-      : faqs;
-    
-    const newSchema = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": faqItems.map(faq => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    };
-    
-    setSchemaData(newSchema);
-    
-    toast({
-      title: "Schema Generated",
-      description: "FAQ schema has been generated from your FAQs"
+  function copyToClipboard(text: string, type: 'html' | 'react') {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success(`${type === 'html' ? 'HTML' : 'React'} code copied to clipboard`);
+    }).catch(err => {
+      toast.error('Failed to copy code');
+      console.error('Failed to copy: ', err);
     });
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-8">
-      <div className="text-center mb-12 animate-fade-in">
-        <div className="inline-block px-3 py-1 bg-accent text-primary rounded-full text-sm font-medium mb-3">
-          Component Generator
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight mb-3">
-          HTML Component Generator
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Create beautifully styled HTML components for product displays, pros & cons lists, FAQ accordions, takeaways, tables, and Schema markup.
-        </p>
-      </div>
-      
-      <div className="border rounded-xl shadow-sm overflow-hidden bg-card">
-        <div className="border-b">
-          <div className="flex overflow-x-auto px-4">
-            <TabButton
-              active={activeTab === 'product'}
-              onClick={() => setActiveTab('product')}
-            >
-              Product Display
-            </TabButton>
-            <TabButton
-              active={activeTab === 'proscons'}
-              onClick={() => setActiveTab('proscons')}
-            >
-              Pros & Cons
-            </TabButton>
-            <TabButton
-              active={activeTab === 'faq'}
-              onClick={() => setActiveTab('faq')}
-            >
-              FAQ Accordion
-            </TabButton>
-            <TabButton
-              active={activeTab === 'takeaway'}
-              onClick={() => setActiveTab('takeaway')}
-            >
-              Takeaways
-            </TabButton>
-            <TabButton
-              active={activeTab === 'table'}
-              onClick={() => setActiveTab('table')}
-            >
-              Table Generator
-            </TabButton>
-            <TabButton
-              active={activeTab === 'schema'}
-              onClick={() => setActiveTab('schema')}
-            >
-              Schema Markup
-            </TabButton>
-          </div>
-        </div>
-        
-        <div className="p-6">
-          <div className="mb-6 pb-6 border-b flex flex-wrap gap-4">
-            {activeTab !== 'product' && activeTab !== 'schema' && activeTab !== 'table' && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="bulkMode"
-                  checked={bulkMode}
-                  onCheckedChange={() => setBulkMode(!bulkMode)}
-                />
-                <Label htmlFor="bulkMode">Bulk Mode</Label>
-              </div>
-            )}
-            {activeTab !== 'schema' && (
-              <div className="flex items-center space-x-2 ml-auto">
-                <Checkbox
-                  id="sharedStyles"
-                  checked={sharedStyles}
-                  onCheckedChange={() => setSharedStyles(!sharedStyles)}
-                />
-                <Label htmlFor="sharedStyles">Include CSS & JavaScript</Label>
-              </div>
-            )}
+    <div className="container mx-auto py-8 px-4">
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Component Generator</CardTitle>
+          <CardDescription>
+            Generate HTML and React components for your website
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="product" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="product">Product Display</TabsTrigger>
+              <TabsTrigger value="table">Table</TabsTrigger>
+            </TabsList>
             
-            {activeTab === 'product' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={generateProductSchema}
-                className="ml-4"
-              >
-                Auto-Generate Schema
-              </Button>
-            )}
-            
-            {activeTab === 'faq' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={generateFaqSchema}
-                className="ml-4"
-              >
-                Auto-Generate Schema
-              </Button>
-            )}
-          </div>
-          
-          <div className="tab-content">
-            {activeTab === 'product' && (
+            <TabsContent value="product">
               <ProductTab
                 productTitle={productTitle}
                 setProductTitle={setProductTitle}
@@ -1223,46 +474,9 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
                 specs={specs}
                 setSpecs={setSpecs}
               />
-            )}
+            </TabsContent>
             
-            {activeTab === 'proscons' && (
-              <ProsConsTab
-                bulkMode={bulkMode}
-                setBulkMode={setBulkMode}
-                prosConsTitle={prosConsTitle}
-                setProsConsTitle={setProsConsTitle}
-                prosOnly={prosOnly}
-                setProsOnly={setProsOnly}
-                consOnly={consOnly}
-                setConsOnly={setConsOnly}
-                bulkProsConsData={bulkProsConsData}
-                setBulkProsConsData={setBulkProsConsData}
-              />
-            )}
-            
-            {activeTab === 'faq' && (
-              <FaqTab
-                bulkMode={bulkMode}
-                setBulkMode={setBulkMode}
-                faqs={faqs}
-                setFaqs={setFaqs}
-                bulkFaqData={bulkFaqData}
-                setBulkFaqData={setBulkFaqData}
-              />
-            )}
-            
-            {activeTab === 'takeaway' && (
-              <TakeawayTab
-                bulkMode={bulkMode}
-                setBulkMode={setBulkMode}
-                takeaways={takeaways}
-                setTakeaways={setTakeaways}
-                bulkTakeawayData={bulkTakeawayData}
-                setBulkTakeawayData={setBulkTakeawayData}
-              />
-            )}
-            
-            {activeTab === 'table' && (
+            <TabsContent value="table">
               <TableTab
                 bulkMode={bulkMode}
                 setBulkMode={setBulkMode}
@@ -1285,36 +499,123 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
                 borderRadius={borderRadius}
                 setBorderRadius={setBorderRadius}
               />
-            )}
-            
-            {activeTab === 'schema' && (
-              <SchemaTab
-                url={schemaUrl}
-                setUrl={setSchemaUrl}
-                schemaData={schemaData}
-                setSchemaData={setSchemaData}
-                isLoading={isLoading}
-                setIsLoading={setIsLoading}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={handleGenerate}>Generate Component</Button>
+        </CardFooter>
+      </Card>
+
+      {htmlOutput && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>Preview</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowPreview(!showPreview)}
+              >
+                {showPreview ? 'Hide' : 'Show'} Preview
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          {showPreview && (
+            <CardContent>
+              <div 
+                className="border rounded-lg p-4 bg-white"
+                dangerouslySetInnerHTML={{ __html: htmlOutput }}
               />
-            )}
-          </div>
-        </div>
-        
-        <div className="p-6 border-t bg-secondary/30">
-          <button
-            onClick={generateHTML}
-            className="btn-primary w-full md:w-auto transform transition-transform duration-200 hover:scale-105"
-          >
-            Generate HTML
-          </button>
-        </div>
-      </div>
-      
-      {generatedHTML && (
-        <div className="space-y-4 animate-fade-up">
-          <h3 className="text-lg font-medium">Generated HTML</h3>
-          <CodePreview code={generatedHTML} language="html" />
-        </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      {htmlOutput && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>HTML Code</span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowCode(!showCode)}
+                >
+                  {showCode ? 'Hide' : 'Show'} Code
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => copyToClipboard(htmlOutput, 'html')}
+                >
+                  <CopyIcon className="mr-2 h-4 w-4" /> Copy
+                </Button>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          {showCode && (
+            <CardContent>
+              <div className="relative">
+                <SyntaxHighlighter
+                  language="html"
+                  style={vscDarkPlus}
+                  customStyle={{
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  {htmlOutput}
+                </SyntaxHighlighter>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      {reactOutput && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>React Code</span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowReactCode(!showReactCode)}
+                >
+                  {showReactCode ? 'Hide' : 'Show'} Code
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => copyToClipboard(reactOutput, 'react')}
+                >
+                  <CopyIcon className="mr-2 h-4 w-4" /> Copy
+                </Button>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          {showReactCode && (
+            <CardContent>
+              <div className="relative">
+                <SyntaxHighlighter
+                  language="jsx"
+                  style={vscDarkPlus}
+                  customStyle={{
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  {reactOutput}
+                </SyntaxHighlighter>
+              </div>
+            </CardContent>
+          )}
+        </Card>
       )}
     </div>
   );
