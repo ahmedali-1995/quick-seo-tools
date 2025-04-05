@@ -8,6 +8,7 @@ import ProsConsTab from './ProsConsTab';
 import FaqTab from './FaqTab';
 import SchemaTab from './SchemaTab';
 import TakeawayTab from './TakeawayTab';
+import TableTab from './TableTab';
 import { SchemaResult } from '@/utils/schemaUtils';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -126,6 +127,14 @@ High-dose Vitamin E supplements (400 IU/day or more) should not be taken without
 
 Nutrition Tip
 Since Vitamin E is fat-soluble, consuming it with some healthy fat improves absorption. Add olive oil to your spinach salad or eat nuts with your fruits to maximize nutrient uptake.`);
+
+  const [tableData, setTableData] = useState<string[][]>([['Data 1', 'Data 2'], ['Data 3', 'Data 4']]);
+  const [tableHeaders, setTableHeaders] = useState<string[]>(['Header 1', 'Header 2']);
+  const [hasHeader, setHasHeader] = useState(true);
+  const [hasAlternatingRows, setHasAlternatingRows] = useState(true);
+  const [isResponsive, setIsResponsive] = useState(true);
+  const [tableCaption, setTableCaption] = useState('Example Table Caption');
+  const [tableStyle, setTableStyle] = useState<'basic' | 'striped' | 'bordered' | 'minimal'>('basic');
 
   function getInlineStyles() {
     return {
@@ -788,6 +797,184 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
     return htmlContent;
   }
 
+  function generateTableHTML() {
+    const styles = getInlineStyles();
+    
+    let tableClasses = '';
+    let tableStyles = {};
+    let thStyles = {};
+    let tdStyles = {};
+    let captionStyles = {};
+    let responsiveWrapperStyles = {};
+    
+    switch (tableStyle) {
+      case 'basic':
+        tableStyles = {
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontFamily: 'Arial, sans-serif',
+          margin: '20px 0',
+          fontSize: '14px'
+        };
+        thStyles = {
+          padding: '12px',
+          textAlign: 'left',
+          backgroundColor: '#f8f9fa',
+          color: '#333',
+          fontWeight: 'bold',
+          borderBottom: '2px solid #5a2c82'
+        };
+        tdStyles = {
+          padding: '10px 12px',
+          borderBottom: '1px solid #e2e8f0',
+          color: '#333'
+        };
+        captionStyles = {
+          captionSide: 'top',
+          textAlign: 'left',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          margin: '10px 0',
+          color: '#5a2c82'
+        };
+        break;
+        
+      case 'striped':
+        tableStyles = {
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontFamily: 'Arial, sans-serif',
+          margin: '20px 0',
+          fontSize: '14px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        };
+        thStyles = {
+          padding: '14px 12px',
+          textAlign: 'left',
+          backgroundColor: '#5a2c82',
+          color: 'white',
+          fontWeight: 'bold'
+        };
+        tdStyles = {
+          padding: '10px 12px',
+          borderBottom: '1px solid #e2e8f0',
+          color: '#333'
+        };
+        captionStyles = {
+          captionSide: 'top',
+          textAlign: 'center',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          margin: '10px 0',
+          color: '#5a2c82'
+        };
+        break;
+        
+      case 'bordered':
+        tableStyles = {
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontFamily: 'Arial, sans-serif',
+          margin: '20px 0',
+          fontSize: '14px',
+          border: '1px solid #cbd5e0'
+        };
+        thStyles = {
+          padding: '12px',
+          textAlign: 'left',
+          backgroundColor: '#f8f9fa',
+          color: '#333',
+          fontWeight: 'bold',
+          border: '1px solid #cbd5e0'
+        };
+        tdStyles = {
+          padding: '10px 12px',
+          border: '1px solid #cbd5e0',
+          color: '#333'
+        };
+        captionStyles = {
+          captionSide: 'top',
+          textAlign: 'left',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          margin: '10px 0',
+          color: '#333'
+        };
+        break;
+        
+      case 'minimal':
+        tableStyles = {
+          width: '100%',
+          borderCollapse: 'collapse',
+          fontFamily: 'Arial, sans-serif',
+          margin: '20px 0',
+          fontSize: '14px'
+        };
+        thStyles = {
+          padding: '12px 5px',
+          textAlign: 'left',
+          borderBottom: '2px solid #333',
+          color: '#333',
+          fontWeight: 'bold'
+        };
+        tdStyles = {
+          padding: '10px 5px',
+          borderBottom: '1px solid #e2e8f0',
+          color: '#333'
+        };
+        captionStyles = {
+          captionSide: 'top',
+          textAlign: 'left',
+          fontSize: '16px',
+          margin: '10px 0',
+          color: '#666',
+          fontStyle: 'italic'
+        };
+        break;
+    }
+    
+    if (isResponsive) {
+      responsiveWrapperStyles = {
+        overflowX: 'auto',
+        width: '100%'
+      };
+    }
+    
+    const evenRowStyles = hasAlternatingRows 
+      ? { backgroundColor: '#f5f6fa' }
+      : {};
+    
+    const responsiveWrapperStart = isResponsive ? `<div style="${objectToInlineStyle(responsiveWrapperStyles)}">` : '';
+    const responsiveWrapperEnd = isResponsive ? '</div>' : '';
+    
+    const htmlContent = `
+    ${responsiveWrapperStart}
+    <table style="${objectToInlineStyle(tableStyles)}">
+      ${tableCaption ? `<caption style="${objectToInlineStyle(captionStyles)}">${tableCaption}</caption>` : ''}
+      ${hasHeader ? `
+      <thead>
+        <tr>
+          ${tableHeaders.map(header => 
+            `<th style="${objectToInlineStyle(thStyles)}">${header}</th>`
+          ).join('')}
+        </tr>
+      </thead>
+      ` : ''}
+      <tbody>
+        ${tableData.map((row, rowIndex) => `
+          <tr${hasAlternatingRows && rowIndex % 2 === 1 ? ` style="${objectToInlineStyle(evenRowStyles)}"` : ''}>
+            ${row.map(cell => 
+              `<td style="${objectToInlineStyle(tdStyles)}">${cell}</td>`
+            ).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    ${responsiveWrapperEnd}`;
+    
+    return htmlContent;
+  }
+
   function generateHTML() {
     let htmlContent = '';
     
@@ -811,6 +998,9 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
         break;
       case 'takeaway':
         htmlContent = generateTakeawayHTML();
+        break;
+      case 'table':
+        htmlContent = generateTableHTML();
         break;
       case 'schema':
         htmlContent = generateSchemaHTML();
@@ -910,7 +1100,7 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
           HTML Component Generator
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Create beautifully styled HTML components for product displays, pros & cons lists, FAQ accordions, takeaways, and Schema markup.
+          Create beautifully styled HTML components for product displays, pros & cons lists, FAQ accordions, takeaways, tables, and Schema markup.
         </p>
       </div>
       
@@ -942,6 +1132,12 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
               Takeaways
             </TabButton>
             <TabButton
+              active={activeTab === 'table'}
+              onClick={() => setActiveTab('table')}
+            >
+              Table Generator
+            </TabButton>
+            <TabButton
               active={activeTab === 'schema'}
               onClick={() => setActiveTab('schema')}
             >
@@ -952,7 +1148,7 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
         
         <div className="p-6">
           <div className="mb-6 pb-6 border-b flex flex-wrap gap-4">
-            {activeTab !== 'product' && activeTab !== 'schema' && (
+            {activeTab !== 'product' && activeTab !== 'schema' && activeTab !== 'table' && (
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="bulkMode"
@@ -1052,6 +1248,27 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
                 setTakeaways={setTakeaways}
                 bulkTakeawayData={bulkTakeawayData}
                 setBulkTakeawayData={setBulkTakeawayData}
+              />
+            )}
+            
+            {activeTab === 'table' && (
+              <TableTab
+                bulkMode={bulkMode}
+                setBulkMode={setBulkMode}
+                tableData={tableData}
+                setTableData={setTableData}
+                tableHeaders={tableHeaders}
+                setTableHeaders={setTableHeaders}
+                hasHeader={hasHeader}
+                setHasHeader={setHasHeader}
+                hasAlternatingRows={hasAlternatingRows}
+                setHasAlternatingRows={setHasAlternatingRows}
+                isResponsive={isResponsive}
+                setIsResponsive={setIsResponsive}
+                tableCaption={tableCaption}
+                setTableCaption={setTableCaption}
+                tableStyle={tableStyle}
+                setTableStyle={setTableStyle}
               />
             )}
             

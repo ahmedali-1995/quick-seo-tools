@@ -1,15 +1,16 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean }
+>(({ className, sortable, ...props }, ref) => (
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm", sortable && "js-sortable-table", className)}
       {...props}
     />
   </div>
@@ -53,12 +54,13 @@ TableFooter.displayName = "TableFooter"
 
 const TableRow = React.forwardRef<
   HTMLTableRowElement,
-  React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableRowElement> & { isHighlighted?: boolean }
+>(({ className, isHighlighted, ...props }, ref) => (
   <tr
     ref={ref}
     className={cn(
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      isHighlighted && "bg-accent/30",
       className
     )}
     {...props}
@@ -68,14 +70,16 @@ TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.ThHTMLAttributes<HTMLTableCellElement> & { sortable?: boolean }
+>(({ className, sortable, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
       "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      sortable && "cursor-pointer hover:bg-accent/20 select-none",
       className
     )}
+    {...sortable && { 'data-sortable': true }}
     {...props}
   />
 ))
@@ -83,11 +87,15 @@ TableHead.displayName = "TableHead"
 
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  React.TdHTMLAttributes<HTMLTableCellElement> & { isHighlighted?: boolean }
+>(({ className, isHighlighted, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={cn(
+      "p-4 align-middle [&:has([role=checkbox])]:pr-0", 
+      isHighlighted && "bg-accent/10 font-medium",
+      className
+    )}
     {...props}
   />
 ))
@@ -95,11 +103,14 @@ TableCell.displayName = "TableCell"
 
 const TableCaption = React.forwardRef<
   HTMLTableCaptionElement,
-  React.HTMLAttributes<HTMLTableCaptionElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLTableCaptionElement> & { position?: "top" | "bottom" }
+>(({ className, position = "bottom", ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    className={cn(
+      position === "bottom" ? "mt-4 text-sm text-muted-foreground" : "mb-4 text-sm font-medium",
+      className
+    )}
     {...props}
   />
 ))
