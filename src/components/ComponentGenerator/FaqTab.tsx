@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
   AccordionContent
 } from "../ui/accordion";
+import { HelpCircle } from 'lucide-react';
 
 interface FaqTabProps {
   bulkMode: boolean;
@@ -61,7 +62,10 @@ const FaqTab: React.FC<FaqTabProps> = ({
       
     return (
       <div className="mt-6 border rounded-lg p-6 bg-accent/40 shadow-md">
-        <h3 className="text-xl font-semibold text-primary mb-6 text-center">FAQ Preview</h3>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <HelpCircle className="h-6 w-6 text-primary" />
+          <h3 className="text-xl font-semibold text-primary text-center">Frequently Asked Questions</h3>
+        </div>
         <div className="space-y-5">
           {faqItems.map((faq, i) => (
             <div 

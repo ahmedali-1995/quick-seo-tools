@@ -11,6 +11,21 @@ import { SchemaResult } from '@/utils/schemaUtils';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 
+interface ExtendedSchemaResult extends SchemaResult {
+  offers?: {
+    "@type": string;
+    price: string;
+    priceCurrency: string;
+    availability: string;
+    url: string;
+  };
+  additionalProperty?: Array<{
+    "@type": string;
+    name: string;
+    value: string;
+  }>;
+}
+
 const ComponentGenerator: React.FC = () => {
   const [activeTab, setActiveTab] = useState('product');
   const [sharedStyles, setSharedStyles] = useState(true);
@@ -19,7 +34,7 @@ const ComponentGenerator: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const [schemaUrl, setSchemaUrl] = useState('');
-  const [schemaData, setSchemaData] = useState<SchemaResult | null>(null);
+  const [schemaData, setSchemaData] = useState<ExtendedSchemaResult | null>(null);
   
   const [productTitle, setProductTitle] = useState('BEST MEN\'S MULTIVITAMIN FOR IMMUNE SUPPORT');
   const [productName, setProductName] = useState('Theralogix Solo Vitamin & Mineral Supplement');
@@ -203,7 +218,16 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
         fontWeight: '700',
         letterSpacing: '-0.5px',
         borderBottom: '2px solid #efe5fa',
-        paddingBottom: '16px'
+        paddingBottom: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px'
+      },
+      faqIcon: {
+        width: '24px',
+        height: '24px',
+        fill: '#5a2c82'
       },
       faqItem: {
         marginBottom: '24px',
@@ -391,7 +415,12 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       
       const htmlContent = `
       <div style="${objectToInlineStyle(styles.faqContainer)}">
-        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
+        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">
+          <svg style="${objectToInlineStyle(styles.faqIcon)}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z" />
+          </svg>
+          Frequently Asked Questions
+        </h3>
         ${faqItems.map((faq, index) => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
             <div style="${objectToInlineStyle(styles.faqQuestion)}">
@@ -408,7 +437,12 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     } else {
       const htmlContent = `
       <div style="${objectToInlineStyle(styles.faqContainer)}">
-        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">Frequently Asked Questions</h3>
+        <h3 style="${objectToInlineStyle(styles.faqContainerH3)}">
+          <svg style="${objectToInlineStyle(styles.faqIcon)}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z" />
+          </svg>
+          Frequently Asked Questions
+        </h3>
         ${faqs.map((faq, index) => `
           <div style="${objectToInlineStyle(styles.faqItem)}">
             <div style="${objectToInlineStyle(styles.faqQuestion)}">
@@ -446,7 +480,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
       return '';
     }
     
-    const productSchema: SchemaResult = {
+    const productSchema: ExtendedSchemaResult = {
       ...schemaData,
       name: productName,
       description: productTitle,
@@ -474,12 +508,12 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
     }
     
     if (productSchema['@type'] === 'Product' && specs.length > 0) {
-      if (!productSchema.additionalProperty) {
-        productSchema.additionalProperty = [];
-      }
+      productSchema.additionalProperty = productSchema.additionalProperty || [];
       
       specs.forEach(spec => {
-        if (!productSchema.additionalProperty?.some(prop => prop.name === spec.label)) {
+        const existingPropIndex = productSchema.additionalProperty?.findIndex(prop => prop.name === spec.label);
+        
+        if (existingPropIndex === -1 || existingPropIndex === undefined) {
           productSchema.additionalProperty?.push({
             "@type": "PropertyValue",
             "name": spec.label,
@@ -568,7 +602,7 @@ A: All our products come with a standard 2-year warranty that covers manufacturi
   }
 
   function generateProductSchema() {
-    const newSchema = {
+    const newSchema: ExtendedSchemaResult = {
       "@context": "https://schema.org",
       "@type": "Product",
       "name": productName,
