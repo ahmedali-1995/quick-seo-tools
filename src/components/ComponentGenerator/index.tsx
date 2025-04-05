@@ -136,6 +136,7 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
   const [tableCaption, setTableCaption] = useState('Example Table Caption');
   const [tableStyle, setTableStyle] = useState<'basic' | 'striped' | 'bordered' | 'minimal'>('basic');
   const [headerColor, setHeaderColor] = useState('');
+  const [borderRadius, setBorderRadius] = useState('');
 
   function getInlineStyles() {
     return {
@@ -975,6 +976,13 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
     </table>
     ${responsiveWrapperEnd}`;
     
+    if (borderRadius) {
+      tableStyles = {
+        ...tableStyles,
+        borderRadius: borderRadius
+      };
+    }
+    
     return htmlContent;
   }
 
@@ -1274,6 +1282,8 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
                 setTableStyle={setTableStyle}
                 headerColor={headerColor}
                 setHeaderColor={setHeaderColor}
+                borderRadius={borderRadius}
+                setBorderRadius={setBorderRadius}
               />
             )}
             
