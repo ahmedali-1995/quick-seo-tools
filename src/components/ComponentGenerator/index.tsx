@@ -135,6 +135,7 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
   const [isResponsive, setIsResponsive] = useState(true);
   const [tableCaption, setTableCaption] = useState('Example Table Caption');
   const [tableStyle, setTableStyle] = useState<'basic' | 'striped' | 'bordered' | 'minimal'>('basic');
+  const [headerColor, setHeaderColor] = useState('');
 
   function getInlineStyles() {
     return {
@@ -955,7 +956,9 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
       <thead>
         <tr>
           ${tableHeaders.map(header => 
-            `<th style="${objectToInlineStyle(thStyles)}">${header}</th>`
+            `<th style="${objectToInlineStyle({...thStyles, ...(headerColor ? {backgroundColor: headerColor, color: '#ffffff'} : {})})}">
+              ${header}
+            </th>`
           ).join('')}
         </tr>
       </thead>
@@ -1269,6 +1272,8 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
                 setTableCaption={setTableCaption}
                 tableStyle={tableStyle}
                 setTableStyle={setTableStyle}
+                headerColor={headerColor}
+                setHeaderColor={setHeaderColor}
               />
             )}
             
