@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -62,7 +63,7 @@ const ComponentGenerator = () => {
 
   function getInlineStyles() {
     if (activeTab === 'table') {
-      const tableStyles = {
+      const tableStyles: Record<string, Record<string, string | number>> = {
         table: {
           width: '100%',
           borderCollapse: 'collapse',
