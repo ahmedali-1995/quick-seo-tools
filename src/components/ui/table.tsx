@@ -3,6 +3,13 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Create a context to pass header color information down to child components
+interface TableContextValue {
+  headerColor?: string;
+}
+
+const TableContext = React.createContext<TableContextValue | null>(null);
+
 const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement> & { sortable?: boolean; headerColor?: string }
@@ -11,7 +18,6 @@ const Table = React.forwardRef<
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", sortable && "js-sortable-table", className)}
-      data-header-color={headerColor}
       {...props}
     />
   </div>
@@ -22,8 +28,9 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  // Get header color from the parent table if available
-  const headerColor = props['data-header-color'] || '';
+  // Get header color from the TableContext
+  const context = React.useContext(TableContext);
+  const headerColor = context?.headerColor;
   const style = headerColor ? { backgroundColor: headerColor } : {};
   
   return (
@@ -83,11 +90,15 @@ TableRow.displayName = "TableRow"
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement> & { sortable?: boolean }
->(({ className, sortable, ...props }, ref) => {
-  // Check if parent has a header color
-  const table = React.useContext(TableContext);
-  const headerColor = table?.headerColor;
-  const style = headerColor ? { color: '#ffffff', ...props.style } : props.style;
+>(({ className, sortable, style, ...props }, ref) => {
+  // Get header color from the TableContext
+  const context = React.useContext(TableContext);
+  const headerColor = context?.headerColor;
+  
+  // If headerColor is defined, set text color to white for better contrast
+  const combinedStyle = headerColor 
+    ? { ...style, color: '#ffffff' }
+    : style;
   
   return (
     <th
@@ -98,7 +109,7 @@ const TableHead = React.forwardRef<
         className
       )}
       {...sortable && { 'data-sortable': true }}
-      style={style}
+      style={combinedStyle}
       {...props}
     />
   )
@@ -135,13 +146,6 @@ const TableCaption = React.forwardRef<
   />
 ))
 TableCaption.displayName = "TableCaption"
-
-// Create a context to pass header color information down to child components
-interface TableContextValue {
-  headerColor?: string;
-}
-
-const TableContext = React.createContext<TableContextValue | null>(null);
 
 // Wrap the Table component to provide context
 const TableWithContext = React.forwardRef<
