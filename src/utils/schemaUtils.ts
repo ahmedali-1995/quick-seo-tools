@@ -210,15 +210,68 @@ export const getSchemaTemplate = (type: string): SchemaResult => {
       return {
         '@context': 'https://schema.org',
         '@type': 'Recipe',
-        'name': '',
-        'author': {
-          '@type': 'Person',
-          'name': ''
+        'name': 'Best protein shake post-workout recipe',
+        'image': [
+          'https://drnutrition.com/storage/media/LoqIjgfVOyMwtIJHlIFh85zOLGgzwPSeUH3Xbyb4.jpg'
+        ],
+        'datePublished': new Date().toISOString(),
+        'description': 'This protein shake is a healthy meal rich in protein and complex carbohydrates, ideal for post-workout recovery.',
+        'prepTime': 'PT10M',
+        'cookTime': 'PT10M',
+        'totalTime': 'PT20M',
+        'recipeCategory': 'beverage',
+        'recipeCuisine': 'international',
+        'nutrition': {
+          '@type': 'NutritionInformation',
+          'calories': '526 calories',
+          'proteinContent': '38g',
+          'carbohydrateContent': '45g',
+          'fatContent': '16g'
         },
-        'image': '',
-        'description': '',
-        'recipeIngredient': [],
-        'recipeInstructions': []
+        'recipeIngredient': [
+          '1 frozen banana, sliced',
+          '1 scoop of Laperva ISO Triple Zero protein',
+          '1 cup of cold, whole milk',
+          '1 tablespoon peanut butter',
+          'Ice cubes (optional)'
+        ],
+        'recipeInstructions': [
+          {
+            '@type': 'HowToStep',
+            'text': 'Gather all ingredients.'
+          },
+          {
+            '@type': 'HowToStep',
+            'text': 'Add the frozen banana, protein powder, milk, and peanut butter to a blender.'
+          },
+          {
+            '@type': 'HowToStep',
+            'text': 'Blend until smooth.'
+          },
+          {
+            '@type': 'HowToStep',
+            'text': 'Add ice cubes if desired and blend again.'
+          },
+          {
+            '@type': 'HowToStep',
+            'text': 'Pour into a glass and enjoy.'
+          }
+        ],
+        'aggregateRating': {
+          '@type': 'AggregateRating',
+          'ratingValue': 4.5,
+          'ratingCount': 1
+        },
+        'recipeYield': '1 serving',
+        'cookingMethod': 'Blending',
+        'keywords': 'protein shake, post-workout, recovery, fitness',
+        'inLanguage': 'en',
+        'about': 'A protein shake designed for post-workout recovery, rich in protein and carbohydrates.',
+        'publisher': {
+          '@type': 'Organization',
+          'name': 'Dr Nutrition',
+          '@id': 'https://drnutrition.com/en-ae/#HealthAndBeautyBusiness'
+        }
       };
     case 'Review':
       return {
