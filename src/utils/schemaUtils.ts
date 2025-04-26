@@ -211,9 +211,7 @@ export const getSchemaTemplate = (type: string): SchemaResult => {
         '@context': 'https://schema.org',
         '@type': 'Recipe',
         'name': 'Best protein shake post-workout recipe',
-        'image': [
-          'https://drnutrition.com/storage/media/LoqIjgfVOyMwtIJHlIFh85zOLGgzwPSeUH3Xbyb4.jpg'
-        ],
+        'image': 'https://drnutrition.com/storage/media/LoqIjgfVOyMwtIJHlIFh85zOLGgzwPSeUH3Xbyb4.jpg',
         'datePublished': new Date().toISOString(),
         'description': 'This protein shake is a healthy meal rich in protein and complex carbohydrates, ideal for post-workout recovery.',
         'prepTime': 'PT10M',

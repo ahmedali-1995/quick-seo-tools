@@ -409,43 +409,74 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
   }
 
   function generateProductHTML() {
-    const styles = getInlineStyles();
     const scriptTag = sharedStyles ? getFaqToggleScript() : '';
     
     const htmlContent = `
-    <div style="${objectToInlineStyle(styles.container)}">
-      <div style="${objectToInlineStyle(styles.productHeader)}">
-        <img style="${objectToInlineStyle(styles.productImage)}" src="${imageUrl}" alt="Product Image">
-        <div style="${objectToInlineStyle(styles.productTitle)}">
-          <h3 style="${objectToInlineStyle(styles.productTitleH3)}">${productTitle}</h3>
-          <h2 style="${objectToInlineStyle(styles.productTitleH2)}">${productName}</h2>
-          <a href="${shopUrl}" style="${objectToInlineStyle(styles.shopButton)}">${shopButtonText}</a>
+    <div style="width: 100%; max-width: 28rem;">
+      <div style="background: white; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+        <!-- Product Header -->
+        <div style="background: linear-gradient(to right, rgba(76, 29, 149, 0.9), rgba(124, 58, 237, 0.9)); padding: 1.5rem;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: center;">
+            <div style="order: 1;">
+              <span style="display: inline-block; background-color: rgba(255, 255, 255, 0.9); color: #4c1d95; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">
+                ${productTitle}
+              </span>
+              <div style="color: white; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">${productName}</div>
+            </div>
+            <div style="order: 2;">
+              <img style="width: 100%; height: auto; border-radius: 0.75rem; object-fit: cover; border: 4px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" 
+                   src="${imageUrl}" 
+                   alt="${productName}">
+            </div>
+          </div>
+          <div style="margin-top: 1rem; text-align: center;">
+            <a href="${shopUrl}" 
+               style="display: inline-block; background-color: white; color: #4c1d95; padding: 0.5rem 1.25rem; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: background-color 0.2s;">
+              ${shopButtonText}
+            </a>
+          </div>
+        </div>
+
+        <!-- Pros and Cons -->
+        <div style="display: flex; flex-direction: row; gap: 1rem; padding: 1.5rem;">
+          <div style="flex: 1; padding: 1rem; border-radius: 0.5rem; background-color: #f5f3ff;">
+            <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #4c1d95;">ADVANTAGES</h3>
+            <ul style="list-style: none; margin: 0; padding: 0;">
+              ${pros.map(pro => `
+                <li style="display: flex; align-items: flex-start; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                  <span style="margin-right: 0.5rem; margin-top: 0.125rem; color: #10b981;">✓</span>
+                  ${pro}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          
+          <div style="flex: 1; padding: 1rem; border-radius: 0.5rem; background-color: #f9fafb;">
+            <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: #374151;">LIMITATIONS</h3>
+            <ul style="list-style: none; margin: 0; padding: 0;">
+              ${cons.map(con => `
+                <li style="display: flex; align-items: flex-start; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                  <span style="margin-right: 0.5rem; margin-top: 0.125rem; color: #ef4444;">✕</span>
+                  ${con}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Specifications -->
+        <div style="border-top: 1px solid #f3f4f6; padding: 1.5rem;">
+          <h3 style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #6b7280; margin-bottom: 0.75rem;">Product Details</h3>
+          <table style="width: 100%; border-collapse: collapse; border-radius: 0.5rem; overflow: hidden;">
+            ${specs.map(spec => `
+              <tr style="background-color: #f9fafb;">
+                <td style="padding: 0.75rem; font-weight: 500; color: #4c1d95; font-size: 0.875rem; width: 33.333%; border: 1px solid #e5e7eb;">${spec.label}</td>
+                <td style="padding: 0.75rem; font-size: 0.875rem; border: 1px solid #e5e7eb;">${spec.value}</td>
+              </tr>
+            `).join('')}
+          </table>
         </div>
       </div>
-      
-      <div style="${objectToInlineStyle(styles.prosCons)}">
-        <div style="${objectToInlineStyle(styles.pros)}">
-          <h4 style="${objectToInlineStyle(styles.h4)}">PROS</h4>
-          <ul style="${objectToInlineStyle(styles.prosList)}">
-            ${pros.map(pro => `<li style="${objectToInlineStyle(styles.prosItem)}">${pro}</li>`).join('')}
-          </ul>
-        </div>
-        <div style="${objectToInlineStyle(styles.cons)}">
-          <h4 style="${objectToInlineStyle(styles.h4)}">CONS</h4>
-          <ul style="${objectToInlineStyle(styles.consList)}">
-            ${cons.map(con => `<li style="${objectToInlineStyle(styles.consItem)}">${con}</li>`).join('')}
-          </ul>
-        </div>
-      </div>
-      
-      <table style="${objectToInlineStyle(styles.table)}">
-        ${specs.map(spec => 
-          `<tr>
-            <td style="${objectToInlineStyle({...styles.tableTd, ...styles.tableFirstTd})}">${spec.label}</td>
-            <td style="${objectToInlineStyle(styles.tableTd)}">${spec.value}</td>
-          </tr>`
-        ).join('')}
-      </table>
     </div>`;
 
     return sharedStyles ? scriptTag + htmlContent : htmlContent;
@@ -754,7 +785,7 @@ Since Vitamin E is fat-soluble, consuming it with some healthy fat improves abso
           break;
         default:
           iconStyle = objectToInlineStyle(styles.iconInfo);
-          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+          iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="'+iconStyle+'"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
       }
       
       return `<span style="${objectToInlineStyle(styles.iconWrapper)}">${iconSvg}</span>`;
